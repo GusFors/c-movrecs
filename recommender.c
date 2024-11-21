@@ -17,11 +17,10 @@ unsigned int count_user_ratings(unsigned int userid_a, struct rating *filtered_r
   unsigned int numratings_other = 0;
 
   for (unsigned int i = 0; i < filtered_rlength; i++) {
-    if (filtered_ratings[i].user_id == userid_a) {
+    if (filtered_ratings[i].user_id == userid_a)
       numratings_a++;
-    } else {
+    else
       numratings_other++;
-    }
   }
 
   return numratings_a;
@@ -46,9 +45,8 @@ unsigned int weighted_scores_short(struct user_sim *simscores, struct rating *ra
     for (unsigned int y = counted_indexes; y < notseen_cnt; y++) {
       if (simscores[i].user_id == ratings_notseen[y].user_id) {
 
-        if (is_curr_id == 0) {
+        if (is_curr_id == 0)
           is_curr_id = 1;
-        }
 
         wscores[l].movie_id = ratings_notseen[y].movie_id;
         wscores[l].simscore = simscores[i].simscore;
@@ -74,7 +72,6 @@ unsigned int euclidianscores(unsigned int userid_a, struct rating *ratings_a, un
   unsigned int checked_rindex = 0;
 
   for (unsigned int i = 0, l = 0; i < ulength; i++) {
-
     unsigned int is_curr_user = 0;
     userid_b = uids[i];
 
@@ -100,13 +97,11 @@ unsigned int euclidianscores(unsigned int userid_a, struct rating *ratings_a, un
       }
     }
 
-    if (uids[i] == userid_a) {
+    if (uids[i] == userid_a)
       continue;
-    }
 
-    if (n == 0) {
+    if (n == 0)
       continue;
-    }
 
     float inv = 1.0 / (1.0 + sim);
 
@@ -180,10 +175,8 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
         j++;
       }
     }
-    if (!isseen) {
-
+    if (!isseen)
       notseen_cnt++;
-    }
   }
 
   struct rating *ratings_notseen = malloc(notseen_cnt * sizeof(struct rating));
@@ -212,6 +205,7 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
   printf("ulength: %d\n", ulength);
 
   merg_sort_rating_by_uid(filtered_ratings, filtered_rlength, NUM_THREADS);
+  // merge_sort_thread_handler(filtered_ratings, filtered_rlength, NUM_THREADS, (void *)&merg_sort_rating_by_uid, (void *)&merg_sort_merge_uid);
 
   clock_t e1 = clock();
   unsigned int simlen = euclidianscores(userid_a, ratings_a, numratings_a, uids, ulength, filtered_ratings, filtered_rlength, simscores);
@@ -258,7 +252,6 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
   struct movie_recommendation movie_recs[read_movies_lines()];
 
   unsigned int num_recs = 0;
-
   unsigned int is_mov_id = 0;
   unsigned int checked_wsind = 0;
 
@@ -376,9 +369,8 @@ int main(void) {
   unsigned int num_loops = 1;
   clock_t total1 = clock();
 
-  for (unsigned int i = 0; i < num_loops; i++) {
+  for (unsigned int i = 0; i < num_loops; i++)
     get_recommendations(movies, ratings, uids, mlength, rlength, ulength);
-  }
 
   clock_t total2 = clock() - total1;
   float total = ((float)total2) / CLOCKS_PER_SEC;

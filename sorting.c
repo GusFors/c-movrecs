@@ -10,6 +10,35 @@
 #include <unistd.h>
 #include "sorting.h"
 
+void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads, void *(*sort_func)(void *),
+                               void *(*merge_func)(struct rating a[], unsigned int, unsigned int, unsigned int)) {
+  pthread_t threads[num_threads];
+
+  unsigned int thread_left = 0;
+  unsigned int thread_split = length / num_threads;
+  struct thread_vars thread_arg[num_threads];
+
+  for (unsigned int i = 0; i < num_threads; i++, thread_left += thread_split) {
+    thread_arg[i].l = thread_left;
+    thread_arg[i].r = thread_left + thread_split - 1;
+
+    if (i == (num_threads - 1))
+      thread_arg[i].r = length - 1;
+
+    thread_arg[i].threads = num_threads;
+    thread_arg[i].id = i;
+    thread_arg[i].a = a;
+
+    pthread_create(&threads[i], NULL, sort_func, &thread_arg[i]);
+  }
+
+  for (unsigned int i = 0; i < num_threads; i++)
+    pthread_join(threads[i], NULL);
+
+  for (int i = 1; i < num_threads; i++)
+    merge_func(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r);
+}
+
 void ins_sort_movid(struct rating a[], unsigned int length) {
   struct rating r;
   for (int i = 0, y = 1; y < length; y++) {
@@ -23,7 +52,7 @@ void ins_sort_movid(struct rating a[], unsigned int length) {
   }
 }
 
-void merg_sort_merge_movid(struct rating a[], unsigned int left, unsigned int mid, unsigned int right) {
+void *merg_sort_merge_movid(struct rating a[], unsigned int left, unsigned int mid, unsigned int right) {
   unsigned int left_length = mid - left + 1;
   unsigned int right_length = right - mid;
 
@@ -63,7 +92,6 @@ void merg_sort_movid_r(struct rating a[], unsigned int left, unsigned int right)
     unsigned int m = left + (range) / 2;
     merg_sort_movid_r(a, left, m);
     merg_sort_movid_r(a, m + 1, right);
-
     merg_sort_merge_movid(a, left, m, right);
   }
 }
@@ -91,36 +119,10 @@ void *merg_sort_movid_thread(void *arg) {
 }
 
 void merg_sort_rating_by_movid(struct rating a[], unsigned int length, unsigned int num_threads) {
-  if (num_threads > 1) {
-    pthread_t threads[num_threads];
-
-    unsigned int thread_left = 0;
-    unsigned int thread_split = length / num_threads;
-    struct thread_vars thread_arg[num_threads];
-
-    for (unsigned int i = 0; i < num_threads; i++, thread_left += thread_split) {
-      thread_arg[i].l = thread_left;
-      thread_arg[i].r = thread_left + thread_split - 1;
-
-      if (i == (num_threads - 1))
-        thread_arg[i].r = length - 1;
-
-      thread_arg[i].threads = num_threads;
-      thread_arg[i].id = i;
-      thread_arg[i].a = a;
-
-      pthread_create(&threads[i], NULL, merg_sort_movid_thread, &thread_arg[i]);
-    }
-
-    for (unsigned int i = 0; i < num_threads; i++)
-      pthread_join(threads[i], NULL);
-
-    for (int i = 1; i < num_threads; i++)
-      merg_sort_merge_movid(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r);
-
-  } else {
+  if (num_threads > 1)
+    merge_sort_thread_handler(a, length, num_threads, merg_sort_movid_thread, merg_sort_merge_movid);
+  else
     merg_sort_movid_r(a, 0, length - 1);
-  }
 }
 
 void ins_sort_uid(struct rating a[], int length) {
@@ -136,7 +138,7 @@ void ins_sort_uid(struct rating a[], int length) {
   }
 }
 
-void merg_sort_merge_uid(struct rating a[], unsigned int left, unsigned int mid, unsigned int right) {
+void *merg_sort_merge_uid(struct rating a[], unsigned int left, unsigned int mid, unsigned int right) {
   unsigned int left_length = mid - left + 1;
   unsigned int right_length = right - mid;
 
@@ -186,7 +188,6 @@ void *merg_sort_rating_by_uid_thread(void *arg) {
   unsigned int thread_id = args.id;
   unsigned int thread_left = args.l;
   unsigned int thread_right = args.r;
-  // take function to be threaded as arg?
 
   printf("threadid: %d, threadleft: %d, threadright: %d, range: %d\n", thread_id, thread_left, thread_right, thread_right - thread_left);
 
@@ -201,39 +202,14 @@ void *merg_sort_rating_by_uid_thread(void *arg) {
   elapsed = (t2.tv_sec - t1.tv_sec) + (t2.tv_nsec - t1.tv_nsec) / 1000000000.0;
 
   printf("sort rating_by_uid pthread[%d] gettime in  %.17gms\n", args.id, elapsed * 1000);
+  // return 0;
 }
 
 void merg_sort_rating_by_uid(struct rating a[], unsigned int length, unsigned int num_threads) {
-  if (num_threads > 1) {
-    pthread_t threads[num_threads];
-
-    unsigned int thread_left = 0;
-    unsigned int thread_split = length / num_threads;
-    struct thread_vars thread_arg[num_threads];
-
-    for (unsigned int i = 0; i < num_threads; i++, thread_left += thread_split) {
-      thread_arg[i].l = thread_left;
-      thread_arg[i].r = thread_left + thread_split - 1;
-
-      if (i == (num_threads - 1))
-        thread_arg[i].r = length - 1;
-
-      thread_arg[i].threads = num_threads;
-      thread_arg[i].id = i;
-      thread_arg[i].a = a;
-
-      pthread_create(&threads[i], NULL, merg_sort_rating_by_uid_thread, &thread_arg[i]);
-    }
-
-    for (unsigned int i = 0; i < num_threads; i++)
-      pthread_join(threads[i], NULL);
-
-    for (int i = 1; i < num_threads; i++)
-      merg_sort_merge_uid(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r);
-
-  } else {
+  if (num_threads > 1)
+    merge_sort_thread_handler(a, length, num_threads, merg_sort_rating_by_uid_thread, merg_sort_merge_uid);
+  else
     merg_sort_uid_r(a, 0, length - 1);
-  }
 }
 
 void merg_sort_merge_rscore(struct movie_recommendation a[], unsigned int left, unsigned int mid, unsigned int right) {
