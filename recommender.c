@@ -10,6 +10,8 @@
 #include <pthread.h>
 #include "regression_tests.h"
 
+#define NUM_THREADS 8
+
 unsigned int count_user_ratings(unsigned int userid_a, struct rating *filtered_ratings, unsigned int filtered_rlength) {
   unsigned int numratings_a = 0;
   unsigned int numratings_other = 0;
@@ -28,7 +30,14 @@ unsigned int count_user_ratings(unsigned int userid_a, struct rating *filtered_r
 unsigned int weighted_scores_short(struct user_sim *simscores, struct rating *ratings_notseen, unsigned int simlen, unsigned int notseen_cnt,
                                    struct weighted_score *wscores) {
   unsigned int ws_len = 0;
-  merg_sort_rating_by_uid(ratings_notseen, notseen_cnt);
+  struct timespec total1, total2;
+  double elapsed;
+  clock_gettime(CLOCK_MONOTONIC, &total1);
+  merg_sort_rating_by_uid(ratings_notseen, notseen_cnt, NUM_THREADS);
+  clock_gettime(CLOCK_MONOTONIC, &total2);
+  elapsed = (total2.tv_sec - total1.tv_sec) + (total2.tv_nsec - total1.tv_nsec) / 1000000000.0;
+  printf("rating by uid time: " YELLOW_OUTPUT "%0.17f\n", elapsed * 1000);
+  printf(RESET_OUTPUT);
 
   unsigned int counted_indexes = 0;
   unsigned int is_curr_id = 0;
@@ -119,8 +128,8 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
   clock_t t1 = clock();
   clock_t s1 = clock();
 
-  unsigned int num_threads = 4;
-  merg_sort_rating_by_movid(ratings, rlength, num_threads);
+  // unsigned int num_threads = 4;
+  merg_sort_rating_by_movid(ratings, rlength, NUM_THREADS);
   printf("sort in  %.17gms\n", ((float)(clock() - s1) / CLOCKS_PER_SEC) * 1000);
 
   calc_num_ratings(movies, ratings, mlength, rlength);
@@ -202,7 +211,7 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
 
   printf("ulength: %d\n", ulength);
 
-  merg_sort_rating_by_uid(filtered_ratings, filtered_rlength);
+  merg_sort_rating_by_uid(filtered_ratings, filtered_rlength, NUM_THREADS);
 
   clock_t e1 = clock();
   unsigned int simlen = euclidianscores(userid_a, ratings_a, numratings_a, uids, ulength, filtered_ratings, filtered_rlength, simscores);

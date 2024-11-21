@@ -16,7 +16,7 @@ struct thread_vars {
 
 void merg_sort_rating_by_movid(struct rating a[], unsigned int length, unsigned int num_threads);
 
-void merg_sort_rating_by_uid(struct rating a[], unsigned int length);
+void merg_sort_rating_by_uid(struct rating a[], unsigned int length, unsigned int num_threads);
 
 void merg_sort_movrec_by_rscore(struct movie_recommendation a[], unsigned int length);
 
