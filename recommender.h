@@ -10,7 +10,8 @@ struct rating {
 struct movie {
   unsigned int movie_id;
   unsigned int num_ratings;
-  char title[128];
+  char title[256];
+  // char title[128];
 };
 
 struct movie_compact {

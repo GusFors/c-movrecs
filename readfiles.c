@@ -190,45 +190,6 @@ unsigned int read_movies(struct movie *movies_p) {
   return records;
 }
 
-unsigned int read_users(unsigned int *users, unsigned int *uids) {
-  FILE *ufile;
-  ufile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
-
-  if (ufile == NULL) {
-    printf("file error\n");
-    return 1;
-  }
-
-  unsigned int read = 0;
-  unsigned int records = 0;
-
-  fscanf(ufile, "%*[^\n]");
-
-  unsigned int current_uid = 0;
-  unsigned int user_cnt = 0;
-
-  while (!feof(ufile)) {
-    read = fscanf(ufile, "%d,%*d,%*lf,%*d\n", &users[records]);
-    current_uid = users[records];
-
-    if (read >= 1) {
-      if (user_cnt != current_uid) {
-        uids[user_cnt] = current_uid;
-
-        user_cnt++;
-      }
-    }
-
-    if (read == 1) {
-      records++;
-    }
-  }
-
-  fclose(ufile);
-  printf("\n%d user records read.\n", user_cnt);
-  return user_cnt;
-}
-
 unsigned int read_users_num(struct rating *ratings_p, unsigned int rlength) {
   clock_t t1 = clock();
 
@@ -271,3 +232,42 @@ unsigned int read_users_from_ratings(unsigned int *uids, struct rating *ratings_
   printf("\n%d user records read.\n", user_cnt);
   return user_cnt;
 }
+
+// unsigned int read_users(unsigned int *users, unsigned int *uids) {
+//   FILE *ufile;
+//   ufile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
+
+//   if (ufile == NULL) {
+//     printf("file error\n");
+//     return 1;
+//   }
+
+//   unsigned int read = 0;
+//   unsigned int records = 0;
+
+//   fscanf(ufile, "%*[^\n]");
+
+//   unsigned int current_uid = 0;
+//   unsigned int user_cnt = 0;
+
+//   while (!feof(ufile)) {
+//     read = fscanf(ufile, "%d,%*d,%*lf,%*d\n", &users[records]);
+//     current_uid = users[records];
+
+//     if (read >= 1) {
+//       if (user_cnt != current_uid) {
+//         uids[user_cnt] = current_uid;
+
+//         user_cnt++;
+//       }
+//     }
+
+//     if (read == 1) {
+//       records++;
+//     }
+//   }
+
+//   fclose(ufile);
+//   printf("\n%d user records read.\n", user_cnt);
+//   return user_cnt;
+// }

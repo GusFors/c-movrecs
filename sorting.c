@@ -10,10 +10,29 @@
 #include <unistd.h>
 #include "sorting.h"
 
-void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads, void *(*sort_func)(void *),
-                               void *(*merge_func)(struct rating a[], unsigned int, unsigned int, unsigned int)) {
-  pthread_t threads[num_threads];
+void *merg_sort_recursion_caller(void *arg) {
+  struct thread_vars args = *((struct thread_vars *)arg);
 
+  unsigned int thread_id = args.id;
+  unsigned int thread_left = args.l;
+  unsigned int thread_right = args.r;
+
+  printf("threadid: %d, threadleft: %d, threadright: %d, range: %d\n", thread_id, thread_left, thread_right, thread_right - thread_left);
+
+  struct timespec t1, t2;
+
+  clock_gettime(CLOCK_MONOTONIC, &t1); // CLOCK_PROCESS_CPUTIME_ID?
+  args.rec_func(args.a, thread_left, thread_right);
+
+  clock_gettime(CLOCK_MONOTONIC, &t2);
+  printf("sort recursion pthread[%d] gettime in  %.17lfms\n", args.id, (double)(t2.tv_sec - t1.tv_sec) + (t2.tv_nsec - t1.tv_nsec) / 1000000.0);
+}
+
+void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads,
+                               void *(*sort_func)(struct rating a[], unsigned int left, unsigned int right),
+                               void *(*merge_func)(struct rating a[], unsigned int, unsigned int, unsigned int)) {
+
+  pthread_t threads[num_threads];
   unsigned int thread_left = 0;
   unsigned int thread_split = length / num_threads;
   struct thread_vars thread_arg[num_threads];
@@ -28,8 +47,9 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
     thread_arg[i].threads = num_threads;
     thread_arg[i].id = i;
     thread_arg[i].a = a;
+    thread_arg[i].rec_func = sort_func;
 
-    pthread_create(&threads[i], NULL, sort_func, &thread_arg[i]);
+    pthread_create(&threads[i], NULL, merg_sort_recursion_caller, &thread_arg[i]);
   }
 
   for (unsigned int i = 0; i < num_threads; i++)
@@ -81,18 +101,17 @@ void *merg_sort_merge_movid(struct rating a[], unsigned int left, unsigned int m
   free(temp_right);
 }
 
-void merg_sort_movid_r(struct rating a[], unsigned int left, unsigned int right) {
+void *merg_sort_movid_r(struct rating a[], unsigned int left, unsigned int right) {
   unsigned int range = right - left;
   if (range < 64) {
     ins_sort_movid(a + left, (range) + 1);
-    return;
-  }
-
-  if (left < right) {
-    unsigned int m = left + (range) / 2;
-    merg_sort_movid_r(a, left, m);
-    merg_sort_movid_r(a, m + 1, right);
-    merg_sort_merge_movid(a, left, m, right);
+  } else {
+    if (left < right) {
+      unsigned int m = left + (range) / 2;
+      merg_sort_movid_r(a, left, m);
+      merg_sort_movid_r(a, m + 1, right);
+      merg_sort_merge_movid(a, left, m, right);
+    }
   }
 }
 
@@ -106,21 +125,18 @@ void *merg_sort_movid_thread(void *arg) {
   printf("threadid: %d, threadleft: %d, threadright: %d, range: %d\n", thread_id, thread_left, thread_right, thread_right - thread_left);
 
   struct timespec t1, t2;
-  double elapsed;
 
   clock_gettime(CLOCK_MONOTONIC, &t1);
   clock_t s1 = clock();
   merg_sort_movid_r(args.a, thread_left, thread_right);
 
   clock_gettime(CLOCK_MONOTONIC, &t2);
-  elapsed = (t2.tv_sec - t1.tv_sec) + (t2.tv_nsec - t1.tv_nsec) / 1000000000.0;
-
-  printf("sort pthread[%d] gettime in  %.17gms\n", args.id, elapsed * 1000);
+  printf("sort pthread[%d] gettime in  %.17gms\n", args.id, (t2.tv_sec - t1.tv_sec) + (t2.tv_nsec - t1.tv_nsec) / 1000000.0);
 }
 
 void merg_sort_rating_by_movid(struct rating a[], unsigned int length, unsigned int num_threads) {
   if (num_threads > 1)
-    merge_sort_thread_handler(a, length, num_threads, merg_sort_movid_thread, merg_sort_merge_movid);
+    merge_sort_thread_handler(a, length, num_threads, merg_sort_movid_r, merg_sort_merge_movid);
   else
     merg_sort_movid_r(a, 0, length - 1);
 }
@@ -167,18 +183,18 @@ void *merg_sort_merge_uid(struct rating a[], unsigned int left, unsigned int mid
   free(temp_right);
 }
 
-void merg_sort_uid_r(struct rating a[], unsigned int left, unsigned int right) {
+void *merg_sort_uid_r(struct rating a[], unsigned int left, unsigned int right) {
   unsigned int range = right - left;
   if (range < 64) {
     ins_sort_uid(a + left, (range) + 1);
-    return;
-  }
-
-  if (left < right) {
-    unsigned int mid = left + (right - left) / 2;
-    merg_sort_uid_r(a, left, mid);
-    merg_sort_uid_r(a, mid + 1, right);
-    merg_sort_merge_uid(a, left, mid, right);
+    // return 0;
+  } else {
+    if (left < right) {
+      unsigned int mid = left + (right - left) / 2;
+      merg_sort_uid_r(a, left, mid);
+      merg_sort_uid_r(a, mid + 1, right);
+      merg_sort_merge_uid(a, left, mid, right);
+    }
   }
 }
 
@@ -192,22 +208,20 @@ void *merg_sort_rating_by_uid_thread(void *arg) {
   printf("threadid: %d, threadleft: %d, threadright: %d, range: %d\n", thread_id, thread_left, thread_right, thread_right - thread_left);
 
   struct timespec t1, t2;
-  double elapsed;
 
   clock_gettime(CLOCK_MONOTONIC, &t1);
   clock_t s1 = clock();
-  merg_sort_uid_r(args.a, thread_left, thread_right);
+  args.rec_func(args.a, thread_left, thread_right);
+  // merg_sort_uid_r(args.a, thread_left, thread_right);
 
   clock_gettime(CLOCK_MONOTONIC, &t2);
-  elapsed = (t2.tv_sec - t1.tv_sec) + (t2.tv_nsec - t1.tv_nsec) / 1000000000.0;
-
-  printf("sort rating_by_uid pthread[%d] gettime in  %.17gms\n", args.id, elapsed * 1000);
+  printf("sort rating_by_uid pthread[%d] gettime in  %.17gms\n", args.id, (t2.tv_sec - t1.tv_sec) + (t2.tv_nsec - t1.tv_nsec) / 1000000.0);
   // return 0;
 }
 
 void merg_sort_rating_by_uid(struct rating a[], unsigned int length, unsigned int num_threads) {
   if (num_threads > 1)
-    merge_sort_thread_handler(a, length, num_threads, merg_sort_rating_by_uid_thread, merg_sort_merge_uid);
+    merge_sort_thread_handler(a, length, num_threads, merg_sort_uid_r, merg_sort_merge_uid);
   else
     merg_sort_uid_r(a, 0, length - 1);
 }

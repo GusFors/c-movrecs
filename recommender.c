@@ -10,7 +10,7 @@
 #include <pthread.h>
 #include "regression_tests.h"
 
-#define NUM_THREADS 8
+#define NUM_THREADS 4
 
 unsigned int count_user_ratings(unsigned int userid_a, struct rating *filtered_ratings, unsigned int filtered_rlength) {
   unsigned int numratings_a = 0;
@@ -29,13 +29,13 @@ unsigned int count_user_ratings(unsigned int userid_a, struct rating *filtered_r
 unsigned int weighted_scores_short(struct user_sim *simscores, struct rating *ratings_notseen, unsigned int simlen, unsigned int notseen_cnt,
                                    struct weighted_score *wscores) {
   unsigned int ws_len = 0;
-  struct timespec total1, total2;
-  double elapsed;
-  clock_gettime(CLOCK_MONOTONIC, &total1);
+  struct timespec t1, t2;
+
+  clock_gettime(CLOCK_MONOTONIC, &t1);
   merg_sort_rating_by_uid(ratings_notseen, notseen_cnt, NUM_THREADS);
-  clock_gettime(CLOCK_MONOTONIC, &total2);
-  elapsed = (total2.tv_sec - total1.tv_sec) + (total2.tv_nsec - total1.tv_nsec) / 1000000000.0;
-  printf("rating by uid time: " YELLOW_OUTPUT "%0.17f\n", elapsed * 1000);
+  clock_gettime(CLOCK_MONOTONIC, &t2);
+
+  printf("rating by uid time: " YELLOW_OUTPUT "%0.17f\n", (t2.tv_sec - t1.tv_sec) + (t2.tv_nsec - t1.tv_nsec) / 1000000.0);
   printf(RESET_OUTPUT);
 
   unsigned int counted_indexes = 0;
@@ -117,7 +117,7 @@ unsigned int euclidianscores(unsigned int userid_a, struct rating *ratings_a, un
 
 void get_recommendations(struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength, unsigned int rlength, unsigned int ulength) {
   struct timespec total1, total2;
-  double elapsed;
+
   clock_gettime(CLOCK_MONOTONIC, &total1);
 
   clock_t t1 = clock();
@@ -172,7 +172,7 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
     for (unsigned int z = 0; z < numratings_a; z++) {
       if (movseen_by_userid_a[z] == filtered_ratings[i].movie_id) {
         isseen = 1;
-        j++;
+        // j++;
       }
     }
     if (!isseen)
@@ -187,7 +187,7 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
     for (unsigned int z = 0; z < numratings_a; z++) {
       if (movseen_by_userid_a[z] == filtered_ratings[i].movie_id) {
         isseen = 1;
-        j++;
+        // j++;
       }
     }
     if (!isseen) {
@@ -229,7 +229,7 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
   merg_sort_ws_by_movid(wscores, ws_len);
   printf("ws sorted in: %.17gms\n", ((float)(clock() - wsort1) / CLOCKS_PER_SEC) * 1000);
 
-  struct movie_compact *filtered_movies_in_wscores = malloc(sizeof(struct movie_compact) * mlength);
+  // struct movie_compact *filtered_movies_in_wscores =(sizeof(struct movie_compact) * mlength);
 
   int highest_id = 0;
   for (int i = 0; i < filtered_mlength; i++) {
@@ -246,8 +246,8 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
   }
   printf("highest numratings: %d\n", highest_numratings);
 
-  int rows = highest_id;
-  int cols = highest_numratings + 1;
+  // int rows = highest_id;
+  // int cols = highest_numratings + 1;
 
   struct movie_recommendation movie_recs[read_movies_lines()];
 
@@ -318,15 +318,15 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
   free(ratings_notseen);
   free(movseen_by_userid_a);
   free(filtered_ratings);
+  free(filtered_movies);
 
   clock_gettime(CLOCK_MONOTONIC, &total2);
-  elapsed = (total2.tv_sec - total1.tv_sec) + (total2.tv_nsec - total1.tv_nsec) / 1000000000.0;
-  printf("total recommendation time: " YELLOW_OUTPUT "%0.17f\n", elapsed * 1000);
+  printf("total recommendation time: " YELLOW_OUTPUT "%0.17f\n", (total2.tv_sec - total1.tv_sec) + (total2.tv_nsec - total1.tv_nsec) / 1000000.0);
   printf(RESET_OUTPUT);
 }
 
 int main(void) {
-  clock_t t1;
+  clock_t t1 = clock();
 
   unsigned int rating_file_size;
   struct rating *ratings;
@@ -336,12 +336,10 @@ int main(void) {
   struct movie *movies;
   unsigned int mlength;
 
-  unsigned int *users;
+  // unsigned int *users;
   unsigned int *uids;
   unsigned int ulength;
   unsigned int user_num;
-
-  t1 = clock();
 
   clock_t rating_read1 = clock();
 
@@ -355,7 +353,7 @@ int main(void) {
 
   printf("ratings read in %.17gms\n", ((float)(clock() - rating_read1) / CLOCKS_PER_SEC) * 1000);
 
-  movies = malloc(movie_file_size * sizeof(struct movie));
+  movies = malloc((movie_file_size + 1) * sizeof(struct movie));
   mlength = read_movies(movies);
 
   user_num = read_users_num(ratings, rlength);
@@ -375,6 +373,10 @@ int main(void) {
   clock_t total2 = clock() - total1;
   float total = ((float)total2) / CLOCKS_PER_SEC;
   printf("total rec loops in %.17gms, avg: %.17fms\n", ((float)(clock() - total1) / CLOCKS_PER_SEC) * 1000, (total * 1000) / num_loops);
+
+  free(ratings);
+  free(movies);
+  free(uids);
 
   return 0;
 }
