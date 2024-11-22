@@ -34,9 +34,9 @@ void bubble_sort_numr_rscore_int(struct movie_recommendation movie_recs[], unsig
 
 void bubble_sort_uid(struct rating movie_recs[], unsigned int num_recs);
 
-void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads,
+void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads, unsigned int val_offset,
                                void *(*sort_func)(struct rating a[], unsigned int left, unsigned int right),
-                               void *(*merge_func)(struct rating a[], unsigned int, unsigned int, unsigned int));
+                               void *(*merge_func)(struct rating a[], unsigned int, unsigned int, unsigned int, unsigned int));
 
 #ifdef __cplusplus
 }
