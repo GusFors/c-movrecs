@@ -11,8 +11,8 @@ struct thread_vars {
   unsigned int r;
   unsigned int threads;
   unsigned int val_offset;
-  void *(*rec_func)(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset, void *(*compare_func)(unsigned int *, unsigned int *));
-  void *(*compare_func)(unsigned int *, unsigned int *);
+  void *(*rec_func)(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset, void *(*compare_func)(unsigned int, unsigned int));
+  void *(*compare_func)(unsigned int, unsigned int);
   struct rating *a;
 };
 
@@ -38,15 +38,18 @@ void bubble_sort_uid(struct rating movie_recs[], unsigned int num_recs);
 
 void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads, unsigned int val_offset,
                                void *(*sort_func)(struct rating[], unsigned int left, unsigned int right, unsigned int val_offset,
-                                                  void *(*compare_func)(unsigned int *, unsigned int *)),
-                               void *(*compare_func)(unsigned int *, unsigned int *));
+                                                  void *(*compare_func)(unsigned int, unsigned int)),
+                               void *(*compare_func)(unsigned int, unsigned int));
 
 void *merg_sort_recursion_caller(void *arg);
 
-void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
-                          void *(*compare_func)(unsigned int *, unsigned int *));
+// void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset, void *(*compare_func)(unsigned int, unsigned
+// int));
 
-void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset);
+// void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset);
+
+// int compare_rating_val_lt(unsigned int *a, unsigned int *b) { return *(int *)a <= *(int *)b; }
+static inline int compare_rating_val_lt(unsigned int a, unsigned int b) { return a <= b; }
 
 #ifdef __cplusplus
 }

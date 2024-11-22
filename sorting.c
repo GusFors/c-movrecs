@@ -14,7 +14,7 @@ struct rating r_offsets;
 const size_t MOV_ID_OFFSET = (char *)&r_offsets.movie_id - (char *)&r_offsets;
 const size_t USER_ID_OFFSET = (char *)&r_offsets.user_id - (char *)&r_offsets;
 
-void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset) {
+inline static void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset) {
   struct rating r;
   for (int i = 0, y = 1; y < length; y++) {
     r = a[y];
@@ -27,10 +27,9 @@ void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned 
   }
 }
 
-int compare_rating_val_lt(unsigned int *a, unsigned int *b) { return *(int *)a <= *(int *)b; }
-
-void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned int mid, unsigned int right, unsigned int val_offset,
-                                void *(*compare_func)(unsigned int *, unsigned int *)) {
+// have different merge functions with different direct comparisons instead of taking compare func as arg for performance?
+inline static void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned int mid, unsigned int right, unsigned int val_offset,
+                                              void *(*compare_func)(unsigned int, unsigned int)) {
   unsigned int left_length = mid - left + 1;
   unsigned int right_length = right - mid;
 
@@ -45,10 +44,15 @@ void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned i
   for (unsigned int i = 0; i < right_length; i++)
     temp_right[i] = a[mid + 1 + i];
 
+  // or have separate for loops for different comparisons with enum/int as arg for which one
   for (i = 0, j = 0, k = left; k <= right; k++) {
     // *((int *)((char *)&(temp_left[i]) + val_offset)) <= *((int *)((char *)&(temp_right[j]) + val_offset)) // more generic but slower than doing comparison
-    if ((i < left_length) && (j >= right_length || compare_func(((unsigned int *)((char *)&(temp_left[i]) + val_offset)),
-                                                                ((unsigned int *)((char *)&(temp_right[j]) + val_offset))))) {
+    // if ((i < left_length) && (j >= right_length || compare_func(((unsigned int *)((char *)&(temp_left[i]) + val_offset)),
+    //                                                             ((unsigned int *)((char *)&(temp_right[j]) + val_offset))))) {
+    if ((i < left_length) && (j >= right_length || compare_func(*((unsigned int *)((char *)&(temp_left[i]) + val_offset)),
+                                                                *((unsigned int *)((char *)&(temp_right[j]) + val_offset))))) {
+      // if ((i < left_length) && (j >= right_length || *((int *)((char *)&(temp_left[i]) + val_offset)) <= *((int *)((char *)&(temp_right[j]) + val_offset))))
+      // {
       a[k] = temp_left[i];
       i++;
     } else {
@@ -63,8 +67,8 @@ void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned i
 
 void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads, unsigned int val_offset,
                                void *(*sort_func)(struct rating[], unsigned int left, unsigned int right, unsigned int val_offset,
-                                                  void *(*compare_func)(unsigned int *, unsigned int *)),
-                               void *(*compare_func)(unsigned int *, unsigned int *)) {
+                                                  void *(*compare_func)(unsigned int, unsigned int)),
+                               void *(*compare_func)(unsigned int, unsigned int)) {
 
   pthread_t threads[num_threads];
   unsigned int thread_left = 0;
@@ -96,8 +100,8 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
   // merge_func(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r, val_offset, (void *)compare_rating_val_lt);
 }
 
-void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
-                          void *(*compare_func)(unsigned int *, unsigned int *)) { // function pointers?
+inline static void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
+                                        void *(*compare_func)(unsigned int, unsigned int)) { // function pointers?
   unsigned int range = right - left;
   if (range < 64) {
     ins_sort_rating_by_offset(a + left, (range) + 1, val_offset);
