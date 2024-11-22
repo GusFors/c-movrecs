@@ -11,7 +11,8 @@ struct thread_vars {
   unsigned int r;
   unsigned int threads;
   unsigned int val_offset;
-  void *(*rec_func)(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset);
+  void *(*rec_func)(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset, void *(*compare_func)(unsigned int *, unsigned int *));
+  void *(*compare_func)(unsigned int *, unsigned int *);
   struct rating *a;
 };
 
@@ -23,7 +24,7 @@ void *merg_sort_merge_uid(struct rating a[], unsigned int left, unsigned int mid
 
 void merg_sort_movrec_by_rscore(struct movie_recommendation a[], unsigned int length);
 
-void merg_sort_ws_by_movid(struct weighted_score a[], unsigned int length);
+void merg_sort_ws_by_movid(struct weighted_score a[], unsigned int length, unsigned int num_threads);
 
 void merg_sort_numratings(struct movie_recommendation a[], unsigned int length);
 
@@ -36,13 +37,14 @@ void bubble_sort_numr_rscore_int(struct movie_recommendation movie_recs[], unsig
 void bubble_sort_uid(struct rating movie_recs[], unsigned int num_recs);
 
 void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads, unsigned int val_offset,
-                               void *(*sort_func)(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset),
-                               void *(*merge_func)(struct rating a[], unsigned int, unsigned int, unsigned int, unsigned int,
-                                                   void *(*compare_func)(unsigned int *, unsigned int *)));
+                               void *(*sort_func)(struct rating[], unsigned int left, unsigned int right, unsigned int val_offset,
+                                                  void *(*compare_func)(unsigned int *, unsigned int *)),
+                               void *(*compare_func)(unsigned int *, unsigned int *));
 
 void *merg_sort_recursion_caller(void *arg);
 
-void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset);
+void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
+                          void *(*compare_func)(unsigned int *, unsigned int *));
 
 void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset);
 

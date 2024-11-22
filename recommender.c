@@ -226,7 +226,7 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
   printf("wslen?? %d\n", ws_len);
 
   clock_t wsort1 = clock();
-  merg_sort_ws_by_movid(wscores, ws_len);
+  merg_sort_ws_by_movid(wscores, ws_len, NUM_THREADS);
   printf("ws sorted in: %.17gms\n", ((float)(clock() - wsort1) / CLOCKS_PER_SEC) * 1000);
 
   // struct movie_compact *filtered_movies_in_wscores =(sizeof(struct movie_compact) * mlength);
