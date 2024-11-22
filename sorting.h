@@ -10,7 +10,8 @@ struct thread_vars {
   unsigned int l;
   unsigned int r;
   unsigned int threads;
-  void *(*rec_func)(struct rating a[], unsigned int left, unsigned int right);
+  unsigned int val_offset;
+  void *(*rec_func)(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset);
   struct rating *a;
 };
 
@@ -35,8 +36,14 @@ void bubble_sort_numr_rscore_int(struct movie_recommendation movie_recs[], unsig
 void bubble_sort_uid(struct rating movie_recs[], unsigned int num_recs);
 
 void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads, unsigned int val_offset,
-                               void *(*sort_func)(struct rating a[], unsigned int left, unsigned int right),
+                               void *(*sort_func)(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset),
                                void *(*merge_func)(struct rating a[], unsigned int, unsigned int, unsigned int, unsigned int));
+
+void *merg_sort_recursion_caller(void *arg);
+
+void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset);
+
+void ins_sort_uid(struct rating a[], int length);
 
 #ifdef __cplusplus
 }
