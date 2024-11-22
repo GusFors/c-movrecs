@@ -43,7 +43,7 @@ void *merg_sort_recursion_caller(void *arg);
 
 void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset);
 
-void ins_sort_uid(struct rating a[], int length);
+void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset);
 
 #ifdef __cplusplus
 }

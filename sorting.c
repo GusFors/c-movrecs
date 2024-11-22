@@ -14,6 +14,19 @@ struct rating r_offsets;
 const size_t MOV_ID_OFFSET = (char *)&r_offsets.movie_id - (char *)&r_offsets;
 const size_t USER_ID_OFFSET = (char *)&r_offsets.user_id - (char *)&r_offsets;
 
+void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset) {
+  struct rating r;
+  for (int i = 0, y = 1; y < length; y++) {
+    r = a[y];
+    i = y - 1;
+    while (i >= 0 && *((int *)((char *)&(a[i]) + val_offset)) > *((int *)((char *)&(r) + val_offset))) {
+      a[i + 1] = a[i];
+      i--;
+    }
+    a[i + 1] = r;
+  }
+}
+
 void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned int mid, unsigned int right, unsigned int val_offset) {
   unsigned int left_length = mid - left + 1;
   unsigned int right_length = right - mid;
@@ -76,26 +89,10 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
   // merg_sort_merge_by_offset(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r, val_offset);
 }
 
-void ins_sort_movid(struct rating a[], unsigned int length) {
-  struct rating r;
-  for (int i = 0, y = 1; y < length; y++) {
-    r = a[y];
-    i = y - 1;
-    while (i >= 0 && a[i].movie_id > r.movie_id) {
-      a[i + 1] = a[i];
-      i--;
-    }
-    a[i + 1] = r;
-  }
-}
-
 void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset) { // function pointers?
   unsigned int range = right - left;
   if (range < 64) {
-    if (!val_offset)
-      ins_sort_uid(a + left, (range) + 1);
-    else
-      ins_sort_movid(a + left, (range) + 1);
+    ins_sort_rating_by_offset(a + left, (range) + 1, val_offset);
   } else {
     if (left < right) {
       unsigned int m = left + (range) / 2;
@@ -111,19 +108,6 @@ void merg_sort_rating_by_movid(struct rating a[], unsigned int length, unsigned 
     merge_sort_thread_handler(a, length, num_threads, MOV_ID_OFFSET, merg_sort_recursion, merg_sort_merge_by_offset);
   else
     merg_sort_recursion(a, 0, length - 1, MOV_ID_OFFSET);
-}
-
-void ins_sort_uid(struct rating a[], int length) {
-  struct rating r;
-  for (int i = 0, y = 1; y < length; y++) {
-    r = a[y];
-    i = y - 1;
-    while (i >= 0 && a[i].user_id > r.user_id) {
-      a[i + 1] = a[i];
-      i--;
-    }
-    a[i + 1] = r;
-  }
 }
 
 void merg_sort_rating_by_uid(struct rating a[], unsigned int length, unsigned int num_threads) {
