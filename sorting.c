@@ -14,7 +14,10 @@ struct rating r_offsets;
 const size_t MOV_ID_OFFSET = (char *)&r_offsets.movie_id - (char *)&r_offsets;
 const size_t USER_ID_OFFSET = (char *)&r_offsets.user_id - (char *)&r_offsets;
 
-void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset) {
+inline static int compare_rating_int_lt(unsigned int *a, unsigned int *b) { return *(int *)a <= *(int *)b; }
+inline static int compare_movrec_float_gt(unsigned int *a, unsigned int *b) { return *(float *)a >= *(float *)b; }
+
+inline static void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset) {
   struct rating r;
   for (int i = 0, y = 1; y < length; y++) {
     r = a[y];
@@ -26,8 +29,6 @@ void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned 
     a[i + 1] = r;
   }
 }
-
-int compare_rating_val_lt(unsigned int *a, unsigned int *b) { return *(int *)a <= *(int *)b; }
 
 void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned int mid, unsigned int right, unsigned int val_offset,
                                 void *(*compare_func)(unsigned int *, unsigned int *)) {
@@ -45,15 +46,27 @@ void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned i
   for (unsigned int i = 0; i < right_length; i++)
     temp_right[i] = a[mid + 1 + i];
 
-  for (i = 0, j = 0, k = left; k <= right; k++) {
-    // *((int *)((char *)&(temp_left[i]) + val_offset)) <= *((int *)((char *)&(temp_right[j]) + val_offset)) // more generic but slower than doing comparison
-    if ((i < left_length) && (j >= right_length || compare_func(((unsigned int *)((char *)&(temp_left[i]) + val_offset)),
-                                                                ((unsigned int *)((char *)&(temp_right[j]) + val_offset))))) {
-      a[k] = temp_left[i];
-      i++;
-    } else {
-      a[k] = temp_right[j];
-      j++;
+  if (compare_func == NULL) { // default comparison
+    for (i = 0, j = 0, k = left; k <= right; k++) {
+      if ((i < left_length) && (j >= right_length || *((int *)((char *)&(temp_left[i]) + val_offset)) <= *((int *)((char *)&(temp_right[j]) + val_offset)))) {
+        a[k] = temp_left[i];
+        i++;
+      } else {
+        a[k] = temp_right[j];
+        j++;
+      }
+    }
+  } else {
+    for (i = 0, j = 0, k = left; k <= right; k++) {
+      // *((int *)((char *)&(temp_left[i]) + val_offset)) <= *((int *)((char *)&(temp_right[j]) + val_offset)) // more generic but slower than doing comparison
+      if ((i < left_length) && (j >= right_length || compare_func(((unsigned int *)((char *)&(temp_left[i]) + val_offset)),
+                                                                  ((unsigned int *)((char *)&(temp_right[j]) + val_offset))))) {
+        a[k] = temp_left[i];
+        i++;
+      } else {
+        a[k] = temp_right[j];
+        j++;
+      }
     }
   }
 
@@ -93,11 +106,11 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
 
   for (int i = 1; i < num_threads; i++)
     merg_sort_merge_by_offset(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r, val_offset, compare_func);
-  // merge_func(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r, val_offset, (void *)compare_rating_val_lt);
+  // merge_func(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r, val_offset, (void *)compare_rating_int_lt);
 }
 
-void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
-                          void *(*compare_func)(unsigned int *, unsigned int *)) { // function pointers?
+inline static void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
+                                        void *(*compare_func)(unsigned int *, unsigned int *)) { // function pointers?
   unsigned int range = right - left;
   if (range < 64) {
     ins_sort_rating_by_offset(a + left, (range) + 1, val_offset);
@@ -113,16 +126,18 @@ void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int rig
 
 void merg_sort_rating_by_movid(struct rating a[], unsigned int length, unsigned int num_threads) {
   if (num_threads > 1)
-    merge_sort_thread_handler(a, length, num_threads, MOV_ID_OFFSET, merg_sort_recursion, (void *)compare_rating_val_lt);
+    merge_sort_thread_handler(a, length, num_threads, MOV_ID_OFFSET, merg_sort_recursion, NULL);
+  // merge_sort_thread_handler(a, length, num_threads, MOV_ID_OFFSET, merg_sort_recursion, (void *)compare_rating_int_lt);
   else
-    merg_sort_recursion(a, 0, length - 1, MOV_ID_OFFSET, (void *)compare_rating_val_lt);
+    merg_sort_recursion(a, 0, length - 1, MOV_ID_OFFSET, (void *)compare_rating_int_lt);
 }
 
 void merg_sort_rating_by_uid(struct rating a[], unsigned int length, unsigned int num_threads) {
   if (num_threads > 1)
-    merge_sort_thread_handler(a, length, num_threads, USER_ID_OFFSET, merg_sort_recursion, (void *)compare_rating_val_lt);
+    merge_sort_thread_handler(a, length, num_threads, USER_ID_OFFSET, merg_sort_recursion, NULL);
+  // merge_sort_thread_handler(a, length, num_threads, USER_ID_OFFSET, merg_sort_recursion, (void *)compare_rating_int_lt);
   else
-    merg_sort_recursion(a, 0, length - 1, USER_ID_OFFSET, (void *)compare_rating_val_lt);
+    merg_sort_recursion(a, 0, length - 1, USER_ID_OFFSET, (void *)compare_rating_int_lt);
 }
 
 void merg_sort_merge_rscore(struct movie_recommendation a[], unsigned int left, unsigned int mid, unsigned int right) {
@@ -165,7 +180,14 @@ void merg_sort_rscore_r(struct movie_recommendation a[], unsigned int left, unsi
   }
 }
 
-void merg_sort_movrec_by_rscore(struct movie_recommendation a[], unsigned int length) { merg_sort_rscore_r(a, 0, length - 1); }
+void merg_sort_movrec_by_rscore(struct movie_recommendation a[], unsigned int length, unsigned int num_threads) {
+  // if (num_threads > 1)
+  //   merge_sort_thread_handler((struct rating *)a, length, num_threads, 8, merg_sort_recursion, (void *)compare_movrec_float_gt);
+  // else
+  //   merg_sort_recursion((struct rating *)a, 0, length - 1, 8, (void *)compare_movrec_float_gt);
+  merg_sort_rscore_r(a, 0, length - 1);
+  //  merg_sort_rscore_r(a, 0, length - 1);
+}
 
 void merg_sort_merge_movid_numratings(struct movie_recommendation a[], unsigned int left, unsigned int mid, unsigned int right) {
   unsigned int left_length = mid - left + 1;
@@ -281,9 +303,10 @@ void merg_sort_ws_by_movid_r(struct weighted_score a[], unsigned int left, unsig
 
 void merg_sort_ws_by_movid(struct weighted_score a[], unsigned int length, unsigned int num_threads) {
   if (num_threads > 1)
-    merge_sort_thread_handler((struct rating *)a, length, num_threads, WS_MOV_ID_OFFSET, merg_sort_recursion, (void *)compare_rating_val_lt);
+    merge_sort_thread_handler((struct rating *)a, length, num_threads, WS_MOV_ID_OFFSET, merg_sort_recursion, NULL);
+  // merge_sort_thread_handler((struct rating *)a, length, num_threads, WS_MOV_ID_OFFSET, merg_sort_recursion, (void *)compare_rating_int_lt);
   else
-    merg_sort_recursion((struct rating *)a, 0, length - 1, WS_MOV_ID_OFFSET, (void *)compare_rating_val_lt); // merg_sort_ws_by_movid_r(a, 0, length - 1);
+    merg_sort_recursion((struct rating *)a, 0, length - 1, WS_MOV_ID_OFFSET, (void *)compare_rating_int_lt); // merg_sort_ws_by_movid_r(a, 0, length - 1);
 }
 
 void *merg_sort_recursion_caller(void *arg) {

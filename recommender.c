@@ -294,7 +294,7 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
   float total = ((float)t2) / CLOCKS_PER_SEC;
   printf("total done in %.17gms\n", ((float)(clock() - t1) / CLOCKS_PER_SEC) * 1000);
 
-  merg_sort_movrec_by_rscore(movie_recs, num_recs);
+  merg_sort_movrec_by_rscore(movie_recs, num_recs, NUM_THREADS);
 
   clock_t numr1 = clock();
 

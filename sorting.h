@@ -22,7 +22,7 @@ void merg_sort_rating_by_uid(struct rating a[], unsigned int length, unsigned in
 
 void *merg_sort_merge_uid(struct rating a[], unsigned int left, unsigned int mid, unsigned int right);
 
-void merg_sort_movrec_by_rscore(struct movie_recommendation a[], unsigned int length);
+void merg_sort_movrec_by_rscore(struct movie_recommendation a[], unsigned int length, unsigned int num_threads);
 
 void merg_sort_ws_by_movid(struct weighted_score a[], unsigned int length, unsigned int num_threads);
 
@@ -43,10 +43,10 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
 
 void *merg_sort_recursion_caller(void *arg);
 
-void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
-                          void *(*compare_func)(unsigned int *, unsigned int *));
+inline static void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
+                                        void *(*compare_func)(unsigned int *, unsigned int *));
 
-void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset);
+inline static void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset);
 
 #ifdef __cplusplus
 }
