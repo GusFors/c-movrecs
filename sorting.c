@@ -27,7 +27,10 @@ void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned 
   }
 }
 
-void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned int mid, unsigned int right, unsigned int val_offset) {
+int compare_rating_val_lt(unsigned int *a, unsigned int *b) { return *(int *)a <= *(int *)b; }
+
+void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned int mid, unsigned int right, unsigned int val_offset,
+                                void *(*compare_func)(unsigned int *, unsigned int *)) {
   unsigned int left_length = mid - left + 1;
   unsigned int right_length = right - mid;
 
@@ -43,7 +46,9 @@ void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned i
     temp_right[i] = a[mid + 1 + i];
 
   for (i = 0, j = 0, k = left; k <= right; k++) {
-    if ((i < left_length) && (j >= right_length || *((int *)((char *)&(temp_left[i]) + val_offset)) <= *((int *)((char *)&(temp_right[j]) + val_offset)))) {
+    // *((int *)((char *)&(temp_left[i]) + val_offset)) <= *((int *)((char *)&(temp_right[j]) + val_offset))
+    if ((i < left_length) && (j >= right_length || compare_func(((unsigned int *)((char *)&(temp_left[i]) + val_offset)),
+                                                                ((unsigned int *)((char *)&(temp_right[j]) + val_offset))))) {
       a[k] = temp_left[i];
       i++;
     } else {
@@ -58,7 +63,8 @@ void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned i
 
 void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads, unsigned int val_offset,
                                void *(*sort_func)(struct rating[], unsigned int left, unsigned int right, unsigned int val_offset),
-                               void *(*merge_func)(struct rating a[], unsigned int, unsigned int, unsigned int, unsigned int)) {
+                               void *(*merge_func)(struct rating a[], unsigned int, unsigned int, unsigned int, unsigned int,
+                                                   void *(*compare_func)(unsigned int *, unsigned int *))) {
 
   pthread_t threads[num_threads];
   unsigned int thread_left = 0;
@@ -85,7 +91,7 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
     pthread_join(threads[i], NULL);
 
   for (int i = 1; i < num_threads; i++)
-    merge_func(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r, val_offset);
+    merge_func(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r, val_offset, (void *)compare_rating_val_lt);
   // merg_sort_merge_by_offset(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r, val_offset);
 }
 
@@ -95,10 +101,10 @@ void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int rig
     ins_sort_rating_by_offset(a + left, (range) + 1, val_offset);
   } else {
     if (left < right) {
-      unsigned int m = left + (range) / 2;
-      merg_sort_recursion(a, left, m, val_offset);
-      merg_sort_recursion(a, m + 1, right, val_offset);
-      merg_sort_merge_by_offset(a, left, m, right, val_offset);
+      unsigned int mid = left + (range) / 2;
+      merg_sort_recursion(a, left, mid, val_offset);
+      merg_sort_recursion(a, mid + 1, right, val_offset);
+      merg_sort_merge_by_offset(a, left, mid, right, val_offset, (void *)compare_rating_val_lt);
     }
   }
 }
@@ -377,32 +383,3 @@ void bubble_sort_uid(struct rating movie_recs[], unsigned int num_recs) {
       break;
   }
 }
-
-// void *merg_sort_movid_r(struct rating a[], unsigned int left, unsigned int right) { // function pointers?
-//   unsigned int range = right - left;
-//   if (range < 64) {
-//     ins_sort_movid(a + left, (range) + 1);
-//   } else {
-//     if (left < right) {
-//       unsigned int m = left + (range) / 2;
-//       merg_sort_movid_r(a, left, m);
-//       merg_sort_movid_r(a, m + 1, right);
-//       merg_sort_merge_by_offset(a, left, m, right, MOV_ID_OFFSET);
-//     }
-//   }
-// }
-
-// void *merg_sort_uid_r(struct rating a[], unsigned int left, unsigned int right) {
-//   unsigned int range = right - left;
-//   if (range < 64) {
-//     ins_sort_uid(a + left, (range) + 1);
-//     // return 0;
-//   } else {
-//     if (left < right) {
-//       unsigned int mid = left + (right - left) / 2;
-//       merg_sort_uid_r(a, left, mid);
-//       merg_sort_uid_r(a, mid + 1, right);
-//       merg_sort_merge_by_offset(a, left, mid, right, USER_ID_OFFSET);
-//     }
-//   }
-// }
