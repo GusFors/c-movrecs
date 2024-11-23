@@ -1,4 +1,5 @@
 #include "recommender.h"
+#include <bits/time.h>
 #include <float.h>
 #include <math.h>
 #include <stdatomic.h>
@@ -93,6 +94,9 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
   unsigned int thread_split = length / num_threads;
   struct thread_vars thread_arg[num_threads];
 
+  struct timespec t1, t2;
+  clock_gettime(CLOCK_MONOTONIC, &t1); // CLOCK_PROCESS_CPUTIME_ID?
+
   for (unsigned int i = 0; i < num_threads; i++, thread_left += thread_split) {
     thread_arg[i].l = thread_left;
     thread_arg[i].r = thread_left + thread_split - 1;
@@ -115,6 +119,9 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
 
   for (int i = 1; i < num_threads; i++)
     merg_sort_merge_by_offset(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r, val_offset, compare_func);
+
+  clock_gettime(CLOCK_MONOTONIC, &t2);
+  printf("pthread tasks done in  %.17lfms\n", ((double)(t2.tv_sec - t1.tv_sec) + (double)(t2.tv_nsec - t1.tv_nsec) / (double)1000000000L) * 1000);
 }
 
 inline static void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset, void *(*compare_func)(void *, void *)) {
@@ -324,15 +331,15 @@ void *merg_sort_recursion_caller(void *arg) {
   unsigned int sort_offset = args.val_offset;
   void *comp_func = args.compare_func;
 
-  printf("threadid: %d, threadleft: %d, threadright: %d, range: %d\n", thread_id, thread_left, thread_right, thread_right - thread_left);
+  // printf("threadid: %d, threadleft: %d, threadright: %d, range: %d\n", thread_id, thread_left, thread_right, thread_right - thread_left);
 
   struct timespec t1, t2;
-
-  clock_gettime(CLOCK_MONOTONIC, &t1); // CLOCK_PROCESS_CPUTIME_ID?
+  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t1); // CLOCK_PROCESS_CPUTIME_ID?
   args.rec_func(args.a, thread_left, thread_right, sort_offset, comp_func);
 
-  clock_gettime(CLOCK_MONOTONIC, &t2);
-  printf("sort recursion pthread[%d] gettime in  %.17lfms\n", args.id, (double)(t2.tv_sec - t1.tv_sec) + (double)(t2.tv_nsec - t1.tv_nsec) / 1000000.0);
+  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t2);
+  printf("sort recursion pthread[%d] gettime in  %.17lfms\n", args.id,
+         ((double)(t2.tv_sec - t1.tv_sec) + (double)(t2.tv_nsec - t1.tv_nsec) / (double)1000000000L) * 1000);
 }
 
 void bubble_sort_numr(struct movie_recommendation movie_recs[], unsigned int num_recs) {
