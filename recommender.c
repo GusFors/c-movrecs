@@ -200,32 +200,41 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
 
   printf("notseen ratings in %.17gms\n", ((float)(clock() - notseen_t1) / CLOCKS_PER_SEC) * 1000);
 
-  clock_t u1 = clock();
   unsigned int userlen = ulength - 1;
   struct user_sim *simscores = malloc(userlen * sizeof(struct user_sim));
-
   printf("ulength: %d\n", ulength);
 
+  struct timespec u1, u2;
+  clock_gettime(CLOCK_MONOTONIC, &u1);
   merg_sort_rating_by_uid(filtered_ratings, filtered_rlength, NUM_THREADS);
-  // merge_sort_thread_handler(filtered_ratings, filtered_rlength, NUM_THREADS, (void *)&merg_sort_rating_by_uid, (void *)&merg_sort_merge_uid);
+  clock_gettime(CLOCK_MONOTONIC, &u2);
 
-  clock_t e1 = clock();
+  printf("euclidian sort uids in: " YELLOW_OUTPUT "%0.17f\n", ((double)(u2.tv_sec - u1.tv_sec) + (double)(u2.tv_nsec - u1.tv_nsec) / (double)1000000000L) * 1000);
+  printf(RESET_OUTPUT);
+
+  struct timespec e1, e2;
+  clock_gettime(CLOCK_MONOTONIC, &e1);
   unsigned int simlen = euclidianscores(userid_a, ratings_a, numratings_a, uids, ulength, filtered_ratings, filtered_rlength, simscores);
+  clock_gettime(CLOCK_MONOTONIC, &e2);
 
-  printf("euclidianscores sim: " YELLOW_OUTPUT "%.17gms\n", ((float)(clock() - e1) / CLOCKS_PER_SEC) * 1000);
-  printf(RESET_OUTPUT);
-  printf("euclidianscores total: " YELLOW_OUTPUT "%.17gms\n", ((float)(clock() - u1) / CLOCKS_PER_SEC) * 1000);
+  printf("euclidianscores sim in: " YELLOW_OUTPUT "%0.17f\n", ((double)(e2.tv_sec - e1.tv_sec) + (double)(e2.tv_nsec - e1.tv_nsec) / (double)1000000000L) * 1000);
   printf(RESET_OUTPUT);
 
+  struct timespec ws1, ws2;
+
+  clock_gettime(CLOCK_MONOTONIC, &ws1);
   clock_t w1 = clock();
+
   printf("notseen cnt: %d\n", notseen_cnt);
   struct weighted_score *wscores = malloc(notseen_cnt * sizeof(struct weighted_score));
   printf("simlen: %d\n", simlen);
 
   unsigned int ws_len = weighted_scores_short(simscores, ratings_notseen, simlen, notseen_cnt, wscores);
 
-  printf("ws short: %.17gms\n", ((float)(clock() - w1) / CLOCKS_PER_SEC) * 1000);
-  printf("wslen?? %d\n", ws_len);
+  clock_gettime(CLOCK_MONOTONIC, &ws2);
+  printf("ws short: " YELLOW_OUTPUT "%0.17f\n", ((double)(ws2.tv_sec - ws1.tv_sec) + (double)(ws2.tv_nsec - ws1.tv_nsec) / (double)1000000000L) * 1000);
+  printf(RESET_OUTPUT);
+  // printf("wslen?? %d\n", ws_len);
 
   clock_t wsort1 = clock();
   merg_sort_ws_by_movid(wscores, ws_len, NUM_THREADS);
@@ -326,7 +335,8 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
 }
 
 int main(void) {
-  clock_t t1 = clock();
+  struct timespec r1, r2, f1, f2, loop_total1, loop_total2;
+  clock_gettime(CLOCK_MONOTONIC, &loop_total1);
 
   unsigned int rating_file_size;
   struct rating *ratings;
@@ -341,17 +351,18 @@ int main(void) {
   unsigned int ulength;
   unsigned int user_num;
 
-  clock_t rating_read1 = clock();
-
+  clock_gettime(CLOCK_MONOTONIC, &r1);
   rating_file_size = read_ratings_lines();
   movie_file_size = read_movies_lines();
+  clock_gettime(CLOCK_MONOTONIC, &r2);
 
-  printf("num lines read in %.17gms\n", ((float)(clock() - t1) / CLOCKS_PER_SEC) * 1000);
+  printf("num lines read in %.17gms\n", ((double)(r2.tv_sec - r1.tv_sec) + (double)(r2.tv_nsec - r1.tv_nsec) / (double)1000000000L) * 1000);
 
   ratings = malloc(rating_file_size * sizeof(struct rating));
   rlength = read_ratings_fast(ratings);
 
-  printf("ratings read in %.17gms\n", ((float)(clock() - rating_read1) / CLOCKS_PER_SEC) * 1000);
+  clock_gettime(CLOCK_MONOTONIC, &r2);
+  printf("ratings read in %.17gms\n", ((double)(r2.tv_sec - r1.tv_sec) + (double)(r2.tv_nsec - r1.tv_nsec) / (double)1000000000L) * 1000);
 
   movies = malloc((movie_file_size + 1) * sizeof(struct movie));
   mlength = read_movies(movies);
@@ -362,17 +373,18 @@ int main(void) {
   ulength = read_users_from_ratings(uids, ratings, rlength);
   printf("ulength: %d\n", ulength);
 
-  printf("files read in %.17gms\n", ((float)(clock() - t1) / CLOCKS_PER_SEC) * 1000);
+  clock_gettime(CLOCK_MONOTONIC, &f2);
+  printf("files read in %.17gms\n", ((double)(f2.tv_sec - r1.tv_sec) + (double)(f2.tv_nsec - r1.tv_nsec) / (double)1000000000L) * 1000);
 
   unsigned int num_loops = 1;
-  clock_t total1 = clock();
-
   for (unsigned int i = 0; i < num_loops; i++)
     get_recommendations(movies, ratings, uids, mlength, rlength, ulength);
 
-  clock_t total2 = clock() - total1;
-  float total = ((float)total2) / CLOCKS_PER_SEC;
-  printf("total rec loops in %.17gms, avg: %.17fms\n", ((float)(clock() - total1) / CLOCKS_PER_SEC) * 1000, (total * 1000) / num_loops);
+  clock_gettime(CLOCK_MONOTONIC, &loop_total2);
+
+  printf("total rec loops in %.17gms, avg: %.17fms\n",
+         ((double)(loop_total2.tv_sec - loop_total1.tv_sec) + (double)(loop_total2.tv_nsec - loop_total1.tv_nsec) / (double)1000000000L) * 1000,
+         (((double)(loop_total2.tv_sec - loop_total1.tv_sec) + (double)(loop_total2.tv_nsec - loop_total1.tv_nsec) / (double)1000000000L) * 1000) / num_loops);
 
   free(ratings);
   free(movies);
