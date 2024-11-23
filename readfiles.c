@@ -9,20 +9,20 @@
 
 #define DATASET "small"
 
-unsigned int read_ratings_lines() {
+int read_ratings_lines() {
   FILE *rfile;
   rfile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
 
   if (rfile == NULL) {
     printf("file error\n");
-    return 1;
+    return -1;
   }
 
   fseek(rfile, 0, SEEK_SET);
   char *line = NULL;
   size_t line_length = 0;
-  size_t readl;
-  size_t num_lines = -1;
+  ssize_t readl;
+  ssize_t num_lines = -1;
 
   while ((readl = getline(&line, &line_length, rfile)) != -1) {
     num_lines++;
@@ -34,45 +34,20 @@ unsigned int read_ratings_lines() {
   return num_lines;
 }
 
-unsigned int read_movies_lines() {
-  FILE *rfile;
-  rfile = fopen("./data/csv-data/" DATASET "/movies.csv", "r");
-
-  if (rfile == NULL) {
-    printf("file error\n");
-    return 1;
-  }
-
-  fseek(rfile, 0, SEEK_SET);
-  char *line = NULL;
-  size_t line_length = 0;
-  size_t readl;
-  size_t num_lines = -1;
-
-  while ((readl = getline(&line, &line_length, rfile)) != -1) {
-    num_lines++;
-  }
-
-  fclose(rfile);
-  printf("\n%zu movies lines read.\n", num_lines);
-
-  return num_lines;
-}
-
-unsigned int read_ratings_fast(struct rating *ratings_p) {
+int read_ratings_fast(struct rating *ratings_p) {
   FILE *rfile;
   rfile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
 
   if (rfile == NULL) {
     printf("file error\n");
-    return 1;
+    return -1;
   }
 
   fseek(rfile, 0, SEEK_SET);
   char *line = NULL;
   size_t line_length = 0;
-  size_t readl;
-  size_t index = -1;
+  ssize_t readl;
+  ssize_t index = -1;
 
   while ((readl = getline(&line, &line_length, rfile)) != -1) {
     if (index == -1) {
@@ -129,13 +104,38 @@ unsigned int read_ratings_fast(struct rating *ratings_p) {
   return index;
 }
 
-unsigned int read_ratings(struct rating *ratings_p) {
+int read_movies_lines() {
+  FILE *rfile;
+  rfile = fopen("./data/csv-data/" DATASET "/movies.csv", "r");
+
+  if (rfile == NULL) {
+    printf("file error\n");
+    return -1;
+  }
+
+  fseek(rfile, 0, SEEK_SET);
+  char *line = NULL;
+  size_t line_length = 0;
+  ssize_t readl;
+  ssize_t num_lines = -1;
+
+  while ((readl = getline(&line, &line_length, rfile)) != -1) {
+    num_lines++;
+  }
+
+  fclose(rfile);
+  printf("\n%zu movies lines read.\n", num_lines);
+
+  return num_lines;
+}
+
+int read_ratings(struct rating *ratings_p) {
   FILE *rfile;
   rfile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
 
   if (rfile == NULL) {
     printf("file error\n");
-    return 1;
+    return -1;
   }
 
   unsigned int read = 0;
@@ -156,13 +156,13 @@ unsigned int read_ratings(struct rating *ratings_p) {
   return records;
 }
 
-unsigned int read_movies(struct movie *movies_p) {
+int read_movies(struct movie *movies_p) {
   FILE *mfile;
   mfile = fopen("./data/csv-data/" DATASET "/movies.csv", "r");
 
   if (mfile == NULL) {
     printf("file error\n");
-    return 1;
+    return -1;
   }
 
   unsigned int read = 0;
