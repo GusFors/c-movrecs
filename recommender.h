@@ -10,7 +10,7 @@ struct rating {
 struct movie {
   unsigned int movie_id;
   unsigned int num_ratings;
-  char title[256];
+  // char title[256];
   // char title[128];
 };
 
@@ -39,6 +39,11 @@ struct movie_recommendation {
   unsigned int movie_id;
   unsigned int num_ratings;
   float recommendation_score;
+};
+
+struct movie_title {
+  char title[256];
+  // id
 };
 
 #ifdef __cplusplus

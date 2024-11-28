@@ -13,7 +13,7 @@ int read_ratings_fast(struct rating *ratings_p);
 
 int read_ratings_lines();
 
-int read_movies(struct movie *movies_p);
+int read_movies(struct movie *movies_p, struct movie_title *mov_titles);
 
 int read_movies_lines();
 

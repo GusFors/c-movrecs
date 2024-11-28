@@ -156,7 +156,7 @@ int read_ratings(struct rating *ratings_p) {
   return records;
 }
 
-int read_movies(struct movie *movies_p) {
+int read_movies(struct movie *movies_p, struct movie_title *mov_titles) {
   FILE *mfile;
   mfile = fopen("./data/csv-data/" DATASET "/movies.csv", "r");
 
@@ -171,8 +171,8 @@ int read_movies(struct movie *movies_p) {
   fscanf(mfile, "%*[^\n]");
 
   while (!feof(mfile)) {
-
-    read = fscanf(mfile, "%d,%255[^\n]", &movies_p[records].movie_id, movies_p[records].title);
+    // read = fscanf(mfile, "%d,%255[^\n]", &movies_p[records].movie_id, movies_p[records].title);
+    read = fscanf(mfile, "%d,%255[^\n]", &movies_p[records].movie_id, mov_titles[records].title);
 
     movies_p[records].num_ratings = 0;
     if (read == 2) {

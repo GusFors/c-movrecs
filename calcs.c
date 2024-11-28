@@ -27,7 +27,7 @@ void calc_num_ratings(struct movie *movies, struct rating *ratings, int mlength,
   }
 
   double total = ((double)clock() - t1) / CLOCKS_PER_SEC;
-  printf("calc num_ratings in %f seconds, %.17gms\n", total, total * 1000);
+  printf("calc num_ratings in:   %.17gms\n", total * 1000);
 }
 
 int filter_numratings(struct movie *movies, struct rating *ratings, int mlength, int rlength, int min_numratings, struct rating *filtered_ratings) {
@@ -59,7 +59,7 @@ int filter_numratings(struct movie *movies, struct rating *ratings, int mlength,
   }
 
   double total = ((double)clock() - t1) / CLOCKS_PER_SEC;
-  printf("filter num_ratings in %f seconds, %.17gms\n", total, total * 1000);
+  printf("filter num_ratings in: %.17gms\n", total * 1000);
   return filtered_rlength;
 }
 
@@ -80,6 +80,6 @@ int filter_movie_numratings(struct movie *movies, int mlength, int min_numrating
   }
 
   double total = ((double)clock() - t1) / CLOCKS_PER_SEC;
-  printf("filter movie num_ratings in %f seconds, %.17gms\n", total, total * 1000);
+  printf("filter movie num_ratings in: %.17gms\n", total * 1000);
   return filtered_mlength;
 }

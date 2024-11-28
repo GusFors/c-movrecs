@@ -34,4 +34,6 @@
 data/
 ignored/
 out/
+*.out*
+perf.data*
 .clang-format
