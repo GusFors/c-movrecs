@@ -17,6 +17,7 @@ extern "C" {
 #define RETURN_FAIL 0
 #define RETURN_SUCCESS 1
 
+int test_compare_sim_scores(struct user_sim *calculated_sim_scores);
 int test_compare_movie_ids(struct movie_recommendation *calculated_recommendations);
 int test_check_duplicated_movie_ids(struct movie_recommendation *calculated_recommendations, int num_recs);
 int test_compare_scores_diff(struct movie_recommendation *calculated_recommendations, int num_recs);
