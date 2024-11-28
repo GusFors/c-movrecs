@@ -2,6 +2,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "recommender.h"
+#include "rating_utils.h"
 
 void calc_num_ratings(struct movie *movies, struct rating *ratings, int mlength, int rlength) {
   clock_t t1 = clock();
@@ -82,4 +83,18 @@ int filter_movie_numratings(struct movie *movies, int mlength, int min_numrating
   double total = ((double)clock() - t1) / CLOCKS_PER_SEC;
   printf("filter movie num_ratings in: %.17gms\n", total * 1000);
   return filtered_mlength;
+}
+
+unsigned int count_user_ratings(unsigned int userid_a, struct rating *filtered_ratings, unsigned int filtered_rlength) {
+  unsigned int numratings_a = 0;
+  unsigned int numratings_other = 0;
+
+  for (unsigned int i = 0; i < filtered_rlength; i++) {
+    if (filtered_ratings[i].user_id == userid_a)
+      numratings_a++;
+    else
+      numratings_other++;
+  }
+
+  return numratings_a;
 }

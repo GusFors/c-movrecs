@@ -1,6 +1,12 @@
 #ifndef RECOMMENDER_H
 #define RECOMMENDER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define NUM_THREADS 4
+
 struct rating {
   unsigned int user_id;
   unsigned int movie_id;
@@ -51,9 +57,8 @@ enum flags {
   SINGLE_THREADED = 1 << 1,
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void get_recommendations(struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength, unsigned int rlength,
+                         unsigned int ulength, unsigned int flags);
 
 #ifdef __cplusplus
 }
