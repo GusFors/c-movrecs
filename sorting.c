@@ -10,10 +10,11 @@
 #include <time.h>
 #include <unistd.h>
 #include "sorting.h"
+#include <stddef.h>
 
-struct rating r_offsets;
-const size_t MOV_ID_OFFSET = (char *)&r_offsets.movie_id - (char *)&r_offsets;
-const size_t USER_ID_OFFSET = (char *)&r_offsets.user_id - (char *)&r_offsets;
+#define USER_ID_OFFSET offsetof(struct rating, user_id)
+#define MOV_ID_OFFSET offsetof(struct rating, movie_id)
+#define WS_MOV_ID_OFFSET offsetof(struct weighted_score, movie_id)
 
 // other struct types might work but note the struct offsets and struct size differences
 inline static void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset, void *(*compare_func)(void *, void *)) {
@@ -48,7 +49,7 @@ void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned i
   unsigned int left_length = mid - left + 1;
   unsigned int right_length = right - mid;
 
-  struct rating *temp_left = malloc((left_length) * sizeof(struct rating));
+  struct rating *temp_left = malloc((left_length) * sizeof(struct rating)); // restrict?
   struct rating *temp_right = malloc((right_length) * sizeof(struct rating));
 
   unsigned int i, j, k;
@@ -267,9 +268,6 @@ void ins_sort_ws(struct weighted_score a[], int length) {
   }
 }
 
-struct weighted_score ws_offsets;
-const size_t WS_MOV_ID_OFFSET = (char *)&ws_offsets.movie_id - (char *)&ws_offsets;
-
 void merg_sort_merge_ws(struct weighted_score a[], unsigned int left, unsigned int mid, unsigned int right) {
   unsigned int left_length = mid - left + 1;
   unsigned int right_length = right - mid;
@@ -338,8 +336,8 @@ void *merg_sort_recursion_caller(void *arg) {
   args.rec_func(args.a, thread_left, thread_right, sort_offset, comp_func);
 
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t2);
-  printf("sort recursion pthread[%d] gettime in  %.17lfms\n", args.id,
-         ((double)(t2.tv_sec - t1.tv_sec) + (double)(t2.tv_nsec - t1.tv_nsec) / (double)1000000000L) * 1000);
+  // printf("sort recursion pthread[%d] gettime in  %.17lfms\n", args.id,
+  //        ((double)(t2.tv_sec - t1.tv_sec) + (double)(t2.tv_nsec - t1.tv_nsec) / (double)1000000000L) * 1000);
 }
 
 void bubble_sort_numr(struct movie_recommendation movie_recs[], unsigned int num_recs) {
@@ -429,3 +427,9 @@ void bubble_sort_uid(struct rating movie_recs[], unsigned int num_recs) {
       break;
   }
 }
+
+// struct weighted_score ws_offsets;
+// const size_t WS_MOV_ID_OFFSET = (char *)&ws_offsets.movie_id - (char *)&ws_offsets;
+// struct rating r_offsets;
+// const size_t MOV_ID_OFFSET = (char *)&r_offsets.movie_id - (char *)&r_offsets;
+// const size_t USER_ID_OFFSET = (char *)&r_offsets.user_id - (char *)&r_offsets;
