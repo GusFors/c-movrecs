@@ -46,6 +46,11 @@ struct movie_title {
   // id
 };
 
+enum flags {
+  TESTS = 1 << 0,
+  SINGLE_THREADED = 1 << 1,
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
