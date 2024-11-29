@@ -4,7 +4,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "recommender.h"
-#include "sorting.h"
+#include "array_sorting.h"
 #include <pthread.h>
 #include "regression_tests.h"
 

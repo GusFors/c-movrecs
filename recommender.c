@@ -5,7 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "recommender.h"
-#include "sorting.h"
+#include "array_sorting.h"
 #include "readfiles.h"
 #include "rating_utils.h"
 #include <pthread.h>

@@ -9,7 +9,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include "sorting.h"
+#include "array_sorting.h"
 #include <stddef.h>
 
 #define USER_ID_OFFSET offsetof(struct rating, user_id)
@@ -62,7 +62,8 @@ void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned i
 
   if (compare_func == NULL) { // default comparison
     for (i = 0, j = 0, k = left; k <= right; k++) {
-      if ((i < left_length) && (j >= right_length || *((int *)((char *)&(temp_left[i]) + val_offset)) <= *((int *)((char *)&(temp_right[j]) + val_offset)))) {
+      if ((i < left_length) &&
+          (j >= right_length || *((int *)((char *)&(temp_left[i]) + val_offset)) <= *((int *)((char *)&(temp_right[j]) + val_offset)))) {
         a[k] = temp_left[i];
         i++;
       } else {
@@ -72,7 +73,8 @@ void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned i
     }
   } else {
     for (i = 0, j = 0, k = left; k <= right; k++) {
-      if ((i < left_length) && (j >= right_length || compare_func(((int *)((char *)&(temp_left[i]) + val_offset)), ((int *)((char *)&(temp_right[j]) + val_offset))))) {
+      if ((i < left_length) &&
+          (j >= right_length || compare_func(((int *)((char *)&(temp_left[i]) + val_offset)), ((int *)((char *)&(temp_right[j]) + val_offset))))) {
         a[k] = temp_left[i];
         i++;
       } else {
@@ -87,7 +89,8 @@ void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned i
 }
 
 void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads, unsigned int val_offset,
-                               void *(*sort_func)(struct rating[], unsigned int left, unsigned int right, unsigned int val_offset, void *(*compare_func)(void *, void *)),
+                               void *(*sort_func)(struct rating[], unsigned int left, unsigned int right, unsigned int val_offset,
+                                                  void *(*compare_func)(void *, void *)),
                                void *(*compare_func)(void *, void *)) {
 
   pthread_t threads[num_threads];
@@ -125,7 +128,8 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
   printf("pthread tasks done in  %.17lfms\n", ((double)(t2.tv_sec - t1.tv_sec) + (double)(t2.tv_nsec - t1.tv_nsec) / (double)1000000000L) * 1000);
 }
 
-inline static void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset, void *(*compare_func)(void *, void *)) {
+inline static void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
+                                        void *(*compare_func)(void *, void *)) {
   unsigned int range = right - left;
   if (range < 64) {
     ins_sort_rating_by_offset(a + left, (range) + 1, val_offset, compare_func);
@@ -317,7 +321,8 @@ void merg_sort_ws_by_movid(struct weighted_score a[], unsigned int length, unsig
     merge_sort_thread_handler((struct rating *)a, length, num_threads, WS_MOV_ID_OFFSET, merg_sort_recursion, NULL);
   // merge_sort_thread_handler((struct rating *)a, length, num_threads, WS_MOV_ID_OFFSET, merg_sort_recursion, (void *)compare_rating_int_lt);
   else
-    merg_sort_recursion((struct rating *)a, 0, length - 1, WS_MOV_ID_OFFSET, (void *)compare_rating_int_lt); // merg_sort_ws_by_movid_r(a, 0, length - 1);
+    merg_sort_recursion((struct rating *)a, 0, length - 1, WS_MOV_ID_OFFSET,
+                        (void *)compare_rating_int_lt); // merg_sort_ws_by_movid_r(a, 0, length - 1);
 }
 
 void *merg_sort_recursion_caller(void *arg) {
@@ -368,7 +373,8 @@ void bubble_sort_numr_rscore(struct movie_recommendation movie_recs[], unsigned 
   for (unsigned int i = 0; i < num_recs - 1; i++) {
     early_break = 0;
     for (unsigned int y = 0; y < num_recs - 1; y++) {
-      if ((fabs(movie_recs[y].recommendation_score - movie_recs[y + 1].recommendation_score)) <= 0.0001 && movie_recs[y].num_ratings < movie_recs[y + 1].num_ratings) {
+      if ((fabs(movie_recs[y].recommendation_score - movie_recs[y + 1].recommendation_score)) <= 0.0001 &&
+          movie_recs[y].num_ratings < movie_recs[y + 1].num_ratings) {
         struct movie_recommendation *first_element = &movie_recs[y];
         struct movie_recommendation tempcopy = *first_element;
         struct movie_recommendation *second_element = &movie_recs[y + 1];
