@@ -19,8 +19,8 @@ extern "C" {
 
 int test_compare_sim_scores(struct user_sim *calculated_sim_scores);
 int test_compare_movie_ids(struct movie_recommendation *calculated_recommendations);
-int test_check_duplicated_movie_ids(struct movie_recommendation *calculated_recommendations, int num_recs);
-int test_compare_scores_diff(struct movie_recommendation *calculated_recommendations, int num_recs);
+int test_check_duplicated_movie_ids(struct movie_recommendation *calculated_recommendations, unsigned int num_recs);
+int test_compare_scores_diff(struct movie_recommendation *calculated_recommendations, unsigned int num_recs);
 
 #ifdef __cplusplus
 }

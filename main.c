@@ -23,22 +23,22 @@ int main(int argc, char *argv[]) {
 
   printf("flags: %d\n", flags);
 
-  struct timespec r1, r2, f1, f2, loop_total1, loop_total2;
+  struct timespec r1, r2, f2, loop_total1, loop_total2;
   clock_gettime(CLOCK_MONOTONIC, &loop_total1);
 
-  unsigned int rating_file_size;
+  ssize_t rating_file_size;
   struct rating *ratings;
-  unsigned int rlength;
+  ssize_t rlength;
 
-  unsigned int movie_file_size;
+  ssize_t movie_file_size;
   struct movie *movies;
   struct movie_title *mov_titles;
-  unsigned int mlength;
+  ssize_t mlength;
 
   // unsigned int *users;
   unsigned int *uids;
-  unsigned int ulength;
-  unsigned int user_num;
+  size_t ulength;
+  size_t user_num;
 
   clock_gettime(CLOCK_MONOTONIC, &r1);
   rating_file_size = read_ratings_lines();
@@ -47,28 +47,28 @@ int main(int argc, char *argv[]) {
 
   printf("num lines read in %.17gms\n", ((double)(r2.tv_sec - r1.tv_sec) + (double)(r2.tv_nsec - r1.tv_nsec) / (double)1000000000L) * 1000);
 
-  ratings = malloc(rating_file_size * sizeof(struct rating));
+  ratings = malloc((unsigned)rating_file_size * sizeof(struct rating));
   rlength = read_ratings_fast(ratings);
 
   clock_gettime(CLOCK_MONOTONIC, &r2);
   printf("ratings read in %.17gms\n", ((double)(r2.tv_sec - r1.tv_sec) + (double)(r2.tv_nsec - r1.tv_nsec) / (double)1000000000L) * 1000);
 
-  movies = malloc((movie_file_size + 1) * sizeof(struct movie));
-  mov_titles = malloc((movie_file_size + 1) * sizeof(struct movie_title));
+  movies = malloc(((size_t)movie_file_size + 1) * sizeof(struct movie));
+  mov_titles = malloc(((size_t)movie_file_size + 1) * sizeof(struct movie_title));
   mlength = read_movies(movies, mov_titles);
 
-  user_num = read_users_num(ratings, rlength);
+  user_num = read_users_num(ratings, (unsigned)rlength);
   uids = malloc((user_num) * sizeof(unsigned int));
 
-  ulength = read_users_from_ratings(uids, ratings, rlength);
-  printf("ulength: %d\n", ulength);
+  ulength = read_users_from_ratings(uids, ratings, (unsigned)rlength);
+  printf("ulength: %zd\n", ulength);
 
   clock_gettime(CLOCK_MONOTONIC, &f2);
   printf("files read in %.17gms\n", ((double)(f2.tv_sec - r1.tv_sec) + (double)(f2.tv_nsec - r1.tv_nsec) / (double)1000000000L) * 1000);
 
   unsigned int num_loops = 1;
   for (unsigned int i = 0; i < num_loops; i++)
-    get_recommendations(movies, ratings, uids, mlength, rlength, ulength, flags);
+    get_recommendations(movies, ratings, uids, (unsigned)mlength, (unsigned)rlength, (unsigned)ulength, flags);
 
   clock_gettime(CLOCK_MONOTONIC, &loop_total2);
 

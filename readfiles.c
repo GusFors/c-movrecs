@@ -9,7 +9,7 @@
 
 #define DATASET "small"
 
-int read_ratings_lines() {
+ssize_t read_ratings_lines() {
   FILE *rfile;
   rfile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
 
@@ -34,7 +34,7 @@ int read_ratings_lines() {
   return num_lines;
 }
 
-int read_ratings_fast(struct rating *ratings_p) {
+ssize_t read_ratings_fast(struct rating *ratings_p) {
   FILE *rfile;
   rfile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
 
@@ -59,13 +59,14 @@ int read_ratings_fast(struct rating *ratings_p) {
     char userid[64] = "";
     char movieid[64] = "";
     char rating[64] = "";
-    unsigned int val_length = 0;
-    unsigned int val_count = 0;
-    unsigned int uid_substr_index = 0;
-    unsigned int mid_substr_index = 0;
-    unsigned int r_substr_index = 0;
 
+    unsigned int val_count = 0;
     unsigned int substr_index = 0;
+
+    // unsigned int uid_substr_index = 0;
+    // unsigned int mid_substr_index = 0;
+    // unsigned int r_substr_index = 0;
+    // unsigned int val_length = 0;
 
     for (unsigned int i = 0; i < line_length; i++) {
       if (line[i] == ',') {
@@ -88,9 +89,13 @@ int read_ratings_fast(struct rating *ratings_p) {
       substr_index++;
     }
 
-    ratings_p[index].user_id = strtol(userid, NULL, 0);
-    ratings_p[index].movie_id = strtol(movieid, NULL, 0);
-    ratings_p[index].rating = strtod(rating, NULL);
+    ratings_p[index].user_id = (unsigned)strtoul(userid, NULL, 0);
+    ratings_p[index].movie_id = (unsigned)strtoul(movieid, NULL, 0);
+    ratings_p[index].rating = strtof(rating, NULL);
+
+    // ratings_p[index].user_id = atoi(userid);
+    // ratings_p[index].movie_id = atoi(movieid);
+    // ratings_p[index].rating = atof(rating);
 
     index++;
   }
@@ -104,7 +109,7 @@ int read_ratings_fast(struct rating *ratings_p) {
   return index;
 }
 
-int read_movies_lines() {
+ssize_t read_movies_lines() {
   FILE *rfile;
   rfile = fopen("./data/csv-data/" DATASET "/movies.csv", "r");
 
@@ -129,7 +134,7 @@ int read_movies_lines() {
   return num_lines;
 }
 
-int read_ratings(struct rating *ratings_p) {
+ssize_t read_ratings(struct rating *ratings_p) {
   FILE *rfile;
   rfile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
 
@@ -138,8 +143,8 @@ int read_ratings(struct rating *ratings_p) {
     return -1;
   }
 
-  unsigned int read = 0;
-  unsigned int records = 0;
+  int read = 0;
+  int records = 0;
 
   fscanf(rfile, "%*[^\n]");
 
@@ -156,7 +161,7 @@ int read_ratings(struct rating *ratings_p) {
   return records;
 }
 
-int read_movies(struct movie *movies_p, struct movie_title *mov_titles) {
+ssize_t read_movies(struct movie *movies_p, struct movie_title *mov_titles) {
   FILE *mfile;
   mfile = fopen("./data/csv-data/" DATASET "/movies.csv", "r");
 
@@ -165,7 +170,7 @@ int read_movies(struct movie *movies_p, struct movie_title *mov_titles) {
     return -1;
   }
 
-  unsigned int read = 0;
+  int read = 0;
   unsigned int records = 0;
 
   fscanf(mfile, "%*[^\n]");
@@ -190,7 +195,7 @@ int read_movies(struct movie *movies_p, struct movie_title *mov_titles) {
   return records;
 }
 
-unsigned int read_users_num(struct rating *ratings_p, unsigned int rlength) {
+size_t read_users_num(struct rating *ratings_p, unsigned int rlength) {
   clock_t t1 = clock();
 
   unsigned int current_uid = 0;
@@ -210,7 +215,7 @@ unsigned int read_users_num(struct rating *ratings_p, unsigned int rlength) {
   return user_cnt;
 }
 
-unsigned int read_users_from_ratings(unsigned int *uids, struct rating *ratings_p, unsigned int rlength) {
+size_t read_users_from_ratings(unsigned int *uids, struct rating *ratings_p, unsigned int rlength) {
   clock_t t1 = clock();
 
   unsigned int current_uid = 0;

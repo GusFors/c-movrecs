@@ -54,7 +54,7 @@ unsigned int euclidianscores(unsigned int userid_a, struct rating *ratings_a, un
   unsigned int simlen = 0;
   unsigned int checked_rindex = 0;
 
-  for (unsigned int i = 0, l = 0; i < ulength; i++) {
+  for (unsigned int i = 0; i < ulength; i++) {
     unsigned int is_curr_user = 0;
     userid_b = uids[i];
 
@@ -86,9 +86,9 @@ unsigned int euclidianscores(unsigned int userid_a, struct rating *ratings_a, un
     if (n == 0)
       continue;
 
-    float inv = 1.0 / (1.0 + sim);
+    float inv = 1.0f / (1.0f + sim);
 
-    if (inv > 0.0) {
+    if (inv > 0.0f) {
       simscores[simlen].user_id = userid_b;
       simscores[simlen].simscore = inv;
       simlen++;
