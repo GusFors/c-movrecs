@@ -176,8 +176,8 @@ ssize_t read_movies(struct movie *movies_p, struct movie_title *mov_titles) {
   fscanf(mfile, "%*[^\n]");
 
   while (!feof(mfile)) {
-    // read = fscanf(mfile, "%d,%255[^\n]", &movies_p[records].movie_id, movies_p[records].title);
     read = fscanf(mfile, "%d,%255[^\n]", &movies_p[records].movie_id, mov_titles[records].title);
+    // read = fscanf(mfile, "%d,%255[^\n]", &movies_p[records].movie_id, movies_p[records].title);
 
     movies_p[records].num_ratings = 0;
     if (read == 2) {
@@ -237,42 +237,3 @@ size_t read_users_from_ratings(unsigned int *uids, struct rating *ratings_p, uns
   printf("\n%d user records read.\n", user_cnt);
   return user_cnt;
 }
-
-// unsigned int read_users(unsigned int *users, unsigned int *uids) {
-//   FILE *ufile;
-//   ufile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
-
-//   if (ufile == NULL) {
-//     printf("file error\n");
-//     return 1;
-//   }
-
-//   unsigned int read = 0;
-//   unsigned int records = 0;
-
-//   fscanf(ufile, "%*[^\n]");
-
-//   unsigned int current_uid = 0;
-//   unsigned int user_cnt = 0;
-
-//   while (!feof(ufile)) {
-//     read = fscanf(ufile, "%d,%*d,%*lf,%*d\n", &users[records]);
-//     current_uid = users[records];
-
-//     if (read >= 1) {
-//       if (user_cnt != current_uid) {
-//         uids[user_cnt] = current_uid;
-
-//         user_cnt++;
-//       }
-//     }
-
-//     if (read == 1) {
-//       records++;
-//     }
-//   }
-
-//   fclose(ufile);
-//   printf("\n%d user records read.\n", user_cnt);
-//   return user_cnt;
-// }

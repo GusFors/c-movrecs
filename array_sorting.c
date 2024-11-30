@@ -17,10 +17,10 @@
 #define WS_MOV_ID_OFFSET offsetof(struct weighted_score, movie_id)
 
 // other struct types might work but note the struct offsets and struct size differences
-inline static void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset, void *(*compare_func)(void *, void *)) {
+inline static void ins_sort_rating_by_offset(struct rating a[], unsigned int length, unsigned int val_offset, int compare_func(void *, void *)) {
   struct rating r;
   if (compare_func == NULL) { // use default comparison
-    for (int i = 0, y = 1; y < length; y++) {
+    for (int i = 0, y = 1; y < (int)length; y++) {
       r = a[y];
       i = y - 1;
       while (i >= 0 && *((int *)((char *)&(a[i]) + val_offset)) > *((int *)((char *)&(r) + val_offset))) {
@@ -30,7 +30,7 @@ inline static void ins_sort_rating_by_offset(struct rating a[], unsigned int len
       a[i + 1] = r;
     }
   } else {
-    for (int i = 0, y = 1; y < length; y++) {
+    for (int i = 0, y = 1; y < (int)length; y++) {
       r = a[y];
       i = y - 1;
 
@@ -45,11 +45,11 @@ inline static void ins_sort_rating_by_offset(struct rating a[], unsigned int len
 }
 
 void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned int mid, unsigned int right, unsigned int val_offset,
-                                void *(*compare_func)(void *, void *)) {
+                                int compare_func(void *, void *)) {
   unsigned int left_length = mid - left + 1;
   unsigned int right_length = right - mid;
 
-  struct rating *temp_left = malloc((left_length) * sizeof(struct rating)); // restrict?
+  struct rating *temp_left = malloc((left_length) * sizeof(struct rating));
   struct rating *temp_right = malloc((right_length) * sizeof(struct rating));
 
   unsigned int i, j, k;
@@ -90,8 +90,8 @@ void *merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned i
 
 void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads, unsigned int val_offset,
                                void *(*sort_func)(struct rating[], unsigned int left, unsigned int right, unsigned int val_offset,
-                                                  void *(*compare_func)(void *, void *)),
-                               void *(*compare_func)(void *, void *)) {
+                                                  int compare_func(void *, void *)),
+                               int compare_func(void *, void *)) {
 
   pthread_t threads[num_threads];
   unsigned int thread_left = 0;
@@ -99,7 +99,7 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
   struct thread_vars thread_arg[num_threads];
 
   struct timespec t1, t2;
-  clock_gettime(CLOCK_MONOTONIC, &t1); // CLOCK_PROCESS_CPUTIME_ID?
+  clock_gettime(CLOCK_MONOTONIC, &t1);
 
   for (unsigned int i = 0; i < num_threads; i++, thread_left += thread_split) {
     thread_arg[i].l = thread_left;
@@ -121,7 +121,7 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
   for (unsigned int i = 0; i < num_threads; i++)
     pthread_join(threads[i], NULL);
 
-  for (int i = 1; i < num_threads; i++)
+  for (unsigned int i = 1; i < num_threads; i++)
     merg_sort_merge_by_offset(a, thread_arg[0].l, thread_arg[i].l - 1, thread_arg[i].r, val_offset, compare_func);
 
   clock_gettime(CLOCK_MONOTONIC, &t2);
@@ -129,7 +129,7 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
 }
 
 inline static void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
-                                        void *(*compare_func)(void *, void *)) {
+                                        int compare_func(void *, void *)) {
   unsigned int range = right - left;
   if (range < 64) {
     ins_sort_rating_by_offset(a + left, (range) + 1, val_offset, compare_func);
@@ -147,15 +147,14 @@ void merg_sort_rating_by_movid(struct rating a[], unsigned int length, unsigned 
   if (num_threads > 1)
     merge_sort_thread_handler(a, length, num_threads, MOV_ID_OFFSET, merg_sort_recursion, NULL);
   else
-    merg_sort_recursion(a, 0, length - 1, MOV_ID_OFFSET, (void *)compare_rating_int_lt);
+    merg_sort_recursion(a, 0, length - 1, MOV_ID_OFFSET, compare_rating_int_lt);
 }
 
 void merg_sort_rating_by_uid(struct rating a[], unsigned int length, unsigned int num_threads) {
   if (num_threads > 1)
     merge_sort_thread_handler(a, length, num_threads, USER_ID_OFFSET, merg_sort_recursion, NULL);
-  // merge_sort_thread_handler(a, length, num_threads, USER_ID_OFFSET, merg_sort_recursion, (void *)compare_rating_int_lt);
   else
-    merg_sort_recursion(a, 0, length - 1, USER_ID_OFFSET, (void *)compare_rating_int_lt);
+    merg_sort_recursion(a, 0, length - 1, USER_ID_OFFSET, compare_rating_int_lt);
 }
 
 void merg_sort_merge_rscore(struct movie_recommendation a[], unsigned int left, unsigned int mid, unsigned int right) {
@@ -200,11 +199,9 @@ void merg_sort_rscore_r(struct movie_recommendation a[], unsigned int left, unsi
 
 void merg_sort_movrec_by_rscore(struct movie_recommendation a[], unsigned int length, unsigned int num_threads) {
   if (num_threads > 1)
-    merge_sort_thread_handler((struct rating *)a, length, num_threads, 8, merg_sort_recursion, (void *)compare_movrec_float_gt);
+    merge_sort_thread_handler((struct rating *)a, length, num_threads, 8, merg_sort_recursion, compare_movrec_float_gt);
   else
-    merg_sort_recursion((struct rating *)a, 0, length - 1, 8, (void *)compare_movrec_float_gt);
-
-  //  merg_sort_rscore_r(a, 0, length - 1);
+    merg_sort_recursion((struct rating *)a, 0, length - 1, 8, compare_movrec_float_gt);
 }
 
 void merg_sort_merge_movid_numratings(struct movie_recommendation a[], unsigned int left, unsigned int mid, unsigned int right) {
@@ -259,9 +256,9 @@ void merg_sort_movid_numratings_r(struct movie_recommendation a[], unsigned int 
 
 void merg_sort_movrec_by_movid_numratings(struct movie_recommendation a[], unsigned int length) { merg_sort_movid_numratings_r(a, 0, length - 1); }
 
-void ins_sort_ws(struct weighted_score a[], int length) {
+void ins_sort_ws(struct weighted_score a[], unsigned int length) {
   struct weighted_score r;
-  for (int i = 0, y = 1; y < length; y++) {
+  for (int i = 0, y = 1; y < (int)length; y++) {
     r = a[y];
     i = y - 1;
     while (i >= 0 && a[i].movie_id > r.movie_id) {
@@ -305,7 +302,7 @@ void merg_sort_ws_by_movid_r(struct weighted_score a[], unsigned int left, unsig
   if (left < right) {
     unsigned int range = right - left;
     if (range < 64) {
-      ins_sort_ws(a + left, (range) + 1);
+      ins_sort_ws(a + left, range + 1);
       return;
     }
 
@@ -319,10 +316,8 @@ void merg_sort_ws_by_movid_r(struct weighted_score a[], unsigned int left, unsig
 void merg_sort_ws_by_movid(struct weighted_score a[], unsigned int length, unsigned int num_threads) {
   if (num_threads > 1)
     merge_sort_thread_handler((struct rating *)a, length, num_threads, WS_MOV_ID_OFFSET, merg_sort_recursion, NULL);
-  // merge_sort_thread_handler((struct rating *)a, length, num_threads, WS_MOV_ID_OFFSET, merg_sort_recursion, (void *)compare_rating_int_lt);
   else
-    merg_sort_recursion((struct rating *)a, 0, length - 1, WS_MOV_ID_OFFSET,
-                        (void *)compare_rating_int_lt); // merg_sort_ws_by_movid_r(a, 0, length - 1);
+    merg_sort_recursion((struct rating *)a, 0, length - 1, WS_MOV_ID_OFFSET, compare_rating_int_lt);
 }
 
 void *merg_sort_recursion_caller(void *arg) {
@@ -332,14 +327,14 @@ void *merg_sort_recursion_caller(void *arg) {
   unsigned int thread_left = args.l;
   unsigned int thread_right = args.r;
   unsigned int sort_offset = args.val_offset;
-  void *comp_func = args.compare_func;
+  int (*comp_func)(void *, void *) = args.compare_func;
 
   // printf("threadid: %d, threadleft: %d, threadright: %d, range: %d\n", thread_id, thread_left, thread_right, thread_right - thread_left);
 
   struct timespec t1, t2;
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t1); // CLOCK_PROCESS_CPUTIME_ID?
-  args.rec_func(args.a, thread_left, thread_right, sort_offset, comp_func);
 
+  args.rec_func(args.a, thread_left, thread_right, sort_offset, comp_func);
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t2);
   // printf("sort recursion pthread[%d] gettime in  %.17lfms\n", args.id,
   //        ((double)(t2.tv_sec - t1.tv_sec) + (double)(t2.tv_nsec - t1.tv_nsec) / (double)1000000000L) * 1000);
@@ -433,9 +428,3 @@ void bubble_sort_uid(struct rating movie_recs[], unsigned int num_recs) {
       break;
   }
 }
-
-// struct weighted_score ws_offsets;
-// const size_t WS_MOV_ID_OFFSET = (char *)&ws_offsets.movie_id - (char *)&ws_offsets;
-// struct rating r_offsets;
-// const size_t MOV_ID_OFFSET = (char *)&r_offsets.movie_id - (char *)&r_offsets;
-// const size_t USER_ID_OFFSET = (char *)&r_offsets.user_id - (char *)&r_offsets;

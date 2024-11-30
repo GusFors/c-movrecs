@@ -69,9 +69,6 @@ unsigned int filter_movie_numratings(struct movie *movies, unsigned int mlength,
 
   unsigned int filtered_mlength = 0;
 
-  // unsigned int is_curr_mov = 0;
-  // unsigned int checked_indexes = 0;
-
   for (unsigned int i = 0; i < mlength; i++) {
     if (movies[i].num_ratings >= min_numratings) {
       filtered_movies[filtered_mlength].movie_id = movies[i].movie_id;

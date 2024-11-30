@@ -22,8 +22,6 @@ size_t read_users_from_ratings(unsigned int *uids, struct rating *ratings_p, uns
 
 size_t read_users_num(struct rating *ratings_p, unsigned int rlength);
 
-// int read_users(unsigned int *users, unsigned int *uids);
-
 #ifdef __cplusplus
 }
 #endif
