@@ -9,7 +9,7 @@
 
 #define DATASET "small"
 
-ssize_t read_ratings_lines() {
+ssize_t read_ratings_lines(void) {
   FILE *rfile;
   rfile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
 
@@ -109,7 +109,7 @@ ssize_t read_ratings_fast(struct rating *ratings_p) {
   return index;
 }
 
-ssize_t read_movies_lines() {
+ssize_t read_movies_lines(void) {
   FILE *rfile;
   rfile = fopen("./data/csv-data/" DATASET "/movies.csv", "r");
 

@@ -11,7 +11,7 @@ struct thread_vars {
   unsigned int r;
   unsigned int threads;
   unsigned int val_offset;
-  void *(*rec_func)(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset, int compare_func(void *, void *));
+  void (*rec_func)(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset, int compare_func(void *, void *));
   int (*compare_func)(void *, void *);
   struct rating *a;
 };
@@ -46,12 +46,12 @@ inline static int compare_rating_int_gteq(void *a, void *b) { return *(int *)a >
 
 inline static int compare_movrec_float_gt(void *a, void *b) { return *(float *)a > *(float *)b; } // >= ?
 
-inline static void *merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
-                                        int compare_func(void *, void *));
+inline static void merg_sort_recursion(struct rating a[], unsigned int left, unsigned int right, unsigned int val_offset,
+                                       int compare_func(void *, void *));
 
 void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned int num_threads, unsigned int val_offset,
-                               void *(*sort_func)(struct rating[], unsigned int left, unsigned int right, unsigned int val_offset,
-                                                  int compare_func(void *, void *)),
+                               void(sort_func)(struct rating[], unsigned int left, unsigned int right, unsigned int val_offset,
+                                               int compare_func(void *, void *)),
                                int compare_func(void *, void *));
 
 #ifdef __cplusplus

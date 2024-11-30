@@ -12,11 +12,11 @@ ssize_t read_ratings(struct rating *ratings_p);
 
 ssize_t read_ratings_fast(struct rating *ratings_p);
 
-ssize_t read_ratings_lines();
+ssize_t read_ratings_lines(void);
 
 ssize_t read_movies(struct movie *movies_p, struct movie_title *mov_titles);
 
-ssize_t read_movies_lines();
+ssize_t read_movies_lines(void);
 
 size_t read_users_from_ratings(unsigned int *uids, struct rating *ratings_p, unsigned int rlength);
 
