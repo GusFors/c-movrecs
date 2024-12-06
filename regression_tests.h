@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <stddef.h>
+
 #define GREEN_OUTPUT "\x1b[32m"
 #define RED_OUTPUT "\x1b[31m"
 #define YELLOW_OUTPUT "\x1b[33m"
@@ -17,10 +19,20 @@ extern "C" {
 #define RETURN_FAIL 0
 #define RETURN_SUCCESS 1
 
+struct test_comparison_data {
+  char *title;
+  struct user_sim *similarity_scores;
+  struct movie_recommendation *movie_recommendations;
+  size_t simscores_len;
+  size_t movrec_len;
+};
+
 int test_compare_sim_scores(struct user_sim *calculated_sim_scores);
+int test_compare_sim_scores_n(struct user_sim *calculated_sim_scores, struct test_comparison_data *comparison_scores);
 int test_compare_movie_ids(struct movie_recommendation *calculated_recommendations);
 int test_check_duplicated_movie_ids(struct movie_recommendation *calculated_recommendations, unsigned int num_recs);
 int test_compare_scores_diff(struct movie_recommendation *calculated_recommendations, unsigned int num_recs);
+void node_old_comparisons(struct test_comparison_data *t);
 
 #ifdef __cplusplus
 }

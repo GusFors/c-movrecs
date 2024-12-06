@@ -7,11 +7,9 @@
 #include "recommender.h"
 #include "readfiles.h"
 
-#define DATASET "small"
-
 ssize_t read_ratings_lines(void) {
   FILE *rfile;
-  rfile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
+  rfile = fopen("./data/csv-data/" DATA_PATH "/ratings.csv", "r");
 
   if (rfile == NULL) {
     printf("file error\n");
@@ -36,7 +34,7 @@ ssize_t read_ratings_lines(void) {
 
 ssize_t read_ratings_fast(struct rating *ratings_p) {
   FILE *rfile;
-  rfile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
+  rfile = fopen("./data/csv-data/" DATA_PATH "/ratings.csv", "r");
 
   if (rfile == NULL) {
     printf("file error\n");
@@ -111,7 +109,7 @@ ssize_t read_ratings_fast(struct rating *ratings_p) {
 
 ssize_t read_movies_lines(void) {
   FILE *rfile;
-  rfile = fopen("./data/csv-data/" DATASET "/movies.csv", "r");
+  rfile = fopen("./data/csv-data/" DATA_PATH "/movies.csv", "r");
 
   if (rfile == NULL) {
     printf("file error\n");
@@ -136,7 +134,7 @@ ssize_t read_movies_lines(void) {
 
 ssize_t read_ratings(struct rating *ratings_p) {
   FILE *rfile;
-  rfile = fopen("./data/csv-data/" DATASET "/ratings.csv", "r");
+  rfile = fopen("./data/csv-data/" DATA_PATH "/ratings.csv", "r");
 
   if (rfile == NULL) {
     printf("file error\n");
@@ -163,7 +161,7 @@ ssize_t read_ratings(struct rating *ratings_p) {
 
 ssize_t read_movies(struct movie *movies_p, struct movie_title *mov_titles) {
   FILE *mfile;
-  mfile = fopen("./data/csv-data/" DATASET "/movies.csv", "r");
+  mfile = fopen("./data/csv-data/" DATA_PATH "/movies.csv", "r");
 
   if (mfile == NULL) {
     printf("file error\n");

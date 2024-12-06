@@ -44,6 +44,8 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
   struct movie_compact *filtered_movies = malloc(sizeof(struct movie_compact) * mlength);
 
   unsigned int filtered_mlength = filter_movie_numratings(movies, mlength, min_numratings, filtered_movies);
+
+  // redundant? filtered numratings matches exp more but without matches original scores
   unsigned int filtered_rlength = filter_numratings(movies, ratings, mlength, rlength, min_numratings, filtered_ratings);
   // filtered_rlength = rlength;
   // filtered_ratings = ratings;

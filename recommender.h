@@ -7,6 +7,36 @@ extern "C" {
 
 #define NUM_THREADS 4
 
+#define DATASET_SMALL 1
+#define DATASET_FULL 2
+#define DATASET_FULL32 3
+
+#define NODE_EXP_TEST_SET 1
+#define NODE_ORIGINAL_TEST_SET 2
+#define C_EXP_TEST_SET 3
+
+// Set dataset path here or override with -D when compiling
+#ifndef DATASET
+#  define DATASET DATASET_SMALL
+#endif
+
+#ifndef DATA_PATH
+#  if DATASET == DATASET_SMALL
+#    define DATA_PATH "small"
+#  elif DATASET == DATASET_FULL
+#    define DATA_PATH "full"
+#  elif DATASET == DATASET_FULL32
+#    define DATA_PATH "full32"
+#  else
+#    define DATA_PATH "small"
+#  endif
+#endif
+
+// Set test comparison set here or with -D
+#ifndef TEST_SET
+#  define TEST_SET NODE_ORIGINAL_TEST_SET
+#endif
+
 struct rating {
   unsigned int user_id;
   unsigned int movie_id;

@@ -60,9 +60,6 @@ unsigned int filter_numratings(struct movie *movies, struct rating *ratings, uns
     }
   }
 
-  // for (unsigned int i = 0; i < mlength; i++) {
-  // }
-
   double total = ((double)clock() - (double)t1) / CLOCKS_PER_SEC;
   printf("filter num_ratings from %d, to: %d, in: %.17gms\n", rlength, filtered_rlength, total * 1000);
   return filtered_rlength;
