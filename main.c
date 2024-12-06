@@ -11,6 +11,7 @@
 
 int main(int argc, char *argv[]) {
   unsigned int flags = 0b0000;
+  unsigned int userid = 3;
 
   for (int i = 1; i < argc; i++) {
     printf("arg[%d]: %s\n", i, argv[i]);
@@ -22,6 +23,12 @@ int main(int argc, char *argv[]) {
 
     if (strncmp(argv[i], "-s", sizeof("-s")) == 0)
       flags |= SINGLE_THREADED;
+
+    if (strncmp(argv[i], "-u", sizeof("-u")) == 0) {
+      userid = (unsigned)strtoul(argv[i + 1], NULL, 0);
+      printf("manually set id: %d\n", userid);
+      i++;
+    }
   }
 
   printf("flags: %d\n", flags);
@@ -71,7 +78,7 @@ int main(int argc, char *argv[]) {
 
   unsigned int num_loops = 1;
   for (unsigned int i = 0; i < num_loops; i++)
-    get_recommendations(movies, ratings, uids, (unsigned)mlength, (unsigned)rlength, (unsigned)ulength, flags);
+    get_recommendations(userid, movies, ratings, uids, (unsigned)mlength, (unsigned)rlength, (unsigned)ulength, flags);
 
   clock_gettime(CLOCK_MONOTONIC, &loop_total2);
 

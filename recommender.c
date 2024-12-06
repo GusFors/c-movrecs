@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "recommender.h"
 #include "array_sorting.h"
+#include "ignored/test_copy_struct/regression_tests.h"
 #include "readfiles.h"
 #include "rating_utils.h"
 #include <pthread.h>
@@ -22,8 +23,8 @@
     } while (0)
 #endif
 
-void get_recommendations(struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength, unsigned int rlength,
-                         unsigned int ulength, unsigned int flags) {
+void get_recommendations(unsigned int userid_a, struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength,
+                         unsigned int rlength, unsigned int ulength, unsigned int flags) {
   struct timespec total1, total2;
 
   clock_gettime(CLOCK_MONOTONIC, &total1);
@@ -52,7 +53,8 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
 
   clock_t c1 = clock();
 
-  unsigned int userid_a = 3;
+  // unsigned int userid_a = 3;
+
   unsigned int numratings_a = count_user_ratings(userid_a, filtered_ratings, filtered_rlength);
   unsigned int *movseen_by_userid_a = malloc(numratings_a * sizeof(unsigned int));
 
@@ -232,11 +234,17 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
 
   printf("total num recs: %d\n", num_recs);
 
-  if (flags & TESTS) {
-    test_compare_movie_ids(movie_recs);
-    test_check_duplicated_movie_ids(movie_recs, num_recs);
-    test_compare_scores_diff(movie_recs, num_recs);
-    test_compare_sim_scores(simscores);
+  // TODO some test should still run, like testing duplicate movids
+  if (userid_a != 3) {
+    printf(YELLOW_OUTPUT "Not running tests as passed userid != 3" RESET_OUTPUT);
+
+  } else {
+    if (flags & TESTS) {
+      test_compare_movie_ids(movie_recs);
+      test_check_duplicated_movie_ids(movie_recs, num_recs);
+      test_compare_scores_diff(movie_recs, num_recs);
+      test_compare_sim_scores(simscores);
+    }
   }
 
   free(wscores);

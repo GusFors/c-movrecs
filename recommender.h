@@ -88,7 +88,7 @@ enum flags {
   SINGLE_THREADED = 1 << 2,
 };
 
-void get_recommendations(struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength, unsigned int rlength,
+void get_recommendations(unsigned int userid, struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength, unsigned int rlength,
                          unsigned int ulength, unsigned int flags);
 
 #ifdef __cplusplus
