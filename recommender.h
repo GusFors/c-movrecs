@@ -54,7 +54,8 @@ struct movie_title {
 
 enum flags {
   TESTS = 1 << 0,
-  SINGLE_THREADED = 1 << 1,
+  VERBOSE_DEBUG = 1 << 1,
+  SINGLE_THREADED = 1 << 2,
 };
 
 void get_recommendations(struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength, unsigned int rlength,

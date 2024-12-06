@@ -17,6 +17,9 @@ int main(int argc, char *argv[]) {
     if (strncmp(argv[i], "-t", sizeof("-t")) == 0)
       flags |= TESTS;
 
+    if (strncmp(argv[i], "-v", sizeof("-s")) == 0)
+      flags |= VERBOSE_DEBUG;
+
     if (strncmp(argv[i], "-s", sizeof("-s")) == 0)
       flags |= SINGLE_THREADED;
   }

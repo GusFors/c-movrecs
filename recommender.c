@@ -1,6 +1,7 @@
 #include <bits/time.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
@@ -12,27 +13,40 @@
 #include "regression_tests.h"
 #include "calc_scores.h"
 
+#ifndef VERBOSE_INFO
+#  define PRINT_VERBOSE(...) while (0)
+#else
+#  define PRINT_VERBOSE(...)                                                                                                                         \
+    do {                                                                                                                                             \
+      printf(__VA_ARGS__);                                                                                                                           \
+    } while (0)
+#endif
+
 void get_recommendations(struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength, unsigned int rlength,
                          unsigned int ulength, unsigned int flags) {
   struct timespec total1, total2;
 
   clock_gettime(CLOCK_MONOTONIC, &total1);
 
-  clock_t s1 = clock();
-  struct timespec calc1, calc2;
+  struct timespec calc1, calc2, sort1;
 
   clock_gettime(CLOCK_MONOTONIC, &calc1);
   merg_sort_rating_by_movid(ratings, rlength, NUM_THREADS);
-  printf("sort in  %.17gms\n", ((float)(clock() - s1) / CLOCKS_PER_SEC) * 1000);
+  clock_gettime(CLOCK_MONOTONIC, &sort1);
+
+  PRINT_VERBOSE("sort ratings by movid in: " YELLOW_OUTPUT "%0.17f" RESET_OUTPUT "\n",
+                ((double)(sort1.tv_sec - calc1.tv_sec) + (double)(sort1.tv_nsec - calc1.tv_nsec) / (double)1000000000L) * 1000);
 
   calc_num_ratings(movies, ratings, mlength, rlength);
 
-  unsigned int min_numratings = 3;
+  unsigned int min_numratings = 3; // take arg
   struct rating *filtered_ratings = malloc(sizeof(struct rating) * rlength);
   struct movie_compact *filtered_movies = malloc(sizeof(struct movie_compact) * mlength);
 
   unsigned int filtered_mlength = filter_movie_numratings(movies, mlength, min_numratings, filtered_movies);
   unsigned int filtered_rlength = filter_numratings(movies, ratings, mlength, rlength, min_numratings, filtered_ratings);
+  // filtered_rlength = rlength;
+  // filtered_ratings = ratings;
 
   clock_t c1 = clock();
 
@@ -47,13 +61,13 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
     }
   }
 
-  printf("movseen num by a: %d\n", numratings_a);
+  PRINT_VERBOSE("movseen num by a: %d\n", numratings_a);
   printf("user a ratings in %.17gms\n", ((float)(clock() - c1) / CLOCKS_PER_SEC) * 1000);
 
   clock_t r1 = clock();
   struct rating ratings_a[numratings_a];
 
-  printf("rlength: %d\n", filtered_rlength);
+  PRINT_VERBOSE("rlength: %d\n", filtered_rlength);
 
   for (unsigned int i = 0, y = 0; i < filtered_rlength; i++) {
     if (filtered_ratings[i].user_id == userid_a) {
@@ -98,7 +112,7 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
 
   unsigned int userlen = ulength - 1;
   struct user_sim *simscores = malloc(userlen * sizeof(struct user_sim));
-  printf("ulength: %d\n", ulength);
+  PRINT_VERBOSE("ulength: %d\n", ulength);
 
   struct timespec u1, u2;
   clock_gettime(CLOCK_MONOTONIC, &u1);
@@ -123,9 +137,9 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
   clock_gettime(CLOCK_MONOTONIC, &ws1);
   clock_t w1 = clock();
 
-  printf("notseen cnt: %d\n", notseen_cnt);
+  PRINT_VERBOSE("notseen cnt: %d\n", notseen_cnt);
   struct weighted_score *wscores = malloc(notseen_cnt * sizeof(struct weighted_score));
-  printf("simlen: %d\n", simlen);
+  PRINT_VERBOSE("simlen: %d\n", simlen);
 
   unsigned int ws_len = weighted_scores_short(simscores, ratings_notseen, simlen, notseen_cnt, wscores);
 
@@ -146,7 +160,7 @@ void get_recommendations(struct movie *movies, struct rating *ratings, unsigned 
       highest_id = filtered_movies[i].movie_id;
   }
 
-  printf("highest movid: %d\n", highest_id);
+  PRINT_VERBOSE("highest movid: %d\n", highest_id);
 
   unsigned int highest_numratings = 0;
   for (unsigned int i = 0; i < filtered_mlength; i++) {

@@ -24,6 +24,7 @@ void calc_num_ratings(struct movie *movies, struct rating *ratings, unsigned int
         break;
       }
     }
+    // keep separate array with only num ratings to use when filter by numratings later? then checking matching movie id can be skipped
     movies[i].num_ratings = num_mratings;
   }
 
@@ -59,8 +60,11 @@ unsigned int filter_numratings(struct movie *movies, struct rating *ratings, uns
     }
   }
 
+  // for (unsigned int i = 0; i < mlength; i++) {
+  // }
+
   double total = ((double)clock() - (double)t1) / CLOCKS_PER_SEC;
-  printf("filter num_ratings in: %.17gms\n", total * 1000);
+  printf("filter num_ratings from %d, to: %d, in: %.17gms\n", rlength, filtered_rlength, total * 1000);
   return filtered_rlength;
 }
 
@@ -78,7 +82,7 @@ unsigned int filter_movie_numratings(struct movie *movies, unsigned int mlength,
   }
 
   double total = ((double)clock() - (double)t1) / CLOCKS_PER_SEC;
-  printf("filter movie num_ratings in: %.17gms\n", total * 1000);
+  printf("filter movie num_ratings from: %d, to: %d in: %.17gms\n", mlength, filtered_mlength, total * 1000);
   return filtered_mlength;
 }
 

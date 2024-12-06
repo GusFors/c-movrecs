@@ -16,6 +16,15 @@
 
 #define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
 
+#ifndef WARN_INFO
+#  define PRINT_WARN(...) while (0)
+#else
+#  define PRINT_WARN(...)                                                                                                                            \
+    do {                                                                                                                                             \
+      printf(__VA_ARGS__);                                                                                                                           \
+    } while (0)
+#endif
+
 int test_compare_sim_scores(struct user_sim *calculated_sim_scores) {
   printf(YELLOW_OUTPUT "\ntest compare similarity scores c\n" RESET_OUTPUT);
 
@@ -154,8 +163,8 @@ int test_compare_sim_scores(struct user_sim *calculated_sim_scores) {
     }
 
     if (score_diff > 0.001) {
-      printf("" WARNING_YELLOW " small simscore diff for userid: %d, expected simscore: %f, actual: %f\n", c_comparisons[i].user_id,
-             c_comparisons[i].simscore, calculated_sim_scores[i].simscore);
+      PRINT_WARN("" WARNING_YELLOW " small simscore diff for userid: %d, expected simscore: %f, actual: %f\n", c_comparisons[i].user_id,
+                 c_comparisons[i].simscore, calculated_sim_scores[i].simscore);
       num_warnings++;
       num_matchings_scores++;
       continue;
@@ -196,8 +205,8 @@ int test_compare_sim_scores(struct user_sim *calculated_sim_scores) {
     }
 
     if (score_diff > 0.001) {
-      printf("" WARNING_YELLOW " small simscore diff for userid: %d, expected simscore: %f, actual: %f\n", n_exp_comparisons[i].user_id,
-             n_exp_comparisons[i].simscore, calculated_sim_scores[i].simscore);
+      PRINT_WARN("" WARNING_YELLOW " small simscore diff for userid: %d, expected simscore: %f, actual: %f\n", n_exp_comparisons[i].user_id,
+                 n_exp_comparisons[i].simscore, calculated_sim_scores[i].simscore);
       num_warnings++;
       num_matchings_scores++;
       continue;
@@ -271,7 +280,7 @@ int test_compare_movie_ids(struct movie_recommendation *calculated_recommendatio
   printf("num_exact_matchings_ids_exp: %d/100\n", num_exact_matchings_ids);
 
   if (num_exact_matchings_ids < 30 || num_exact_matchings_ids_node < 30 || num_exact_matchings_ids_node_old < 30)
-    printf("" WARNING_YELLOW " low amount of exactly matching movids\n");
+    PRINT_WARN("" WARNING_YELLOW " low amount of exactly matching movids\n");
 
   return 1;
 }
