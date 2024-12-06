@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include "recommender.h"
 #include "array_sorting.h"
-#include "ignored/test_copy_struct/regression_tests.h"
 #include "readfiles.h"
 #include "rating_utils.h"
 #include <pthread.h>
