@@ -95,6 +95,9 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
                                                int compare_func(void *, void *)),
                                int compare_func(void *, void *)) {
 
+  if (length <= num_threads)
+    num_threads = 1;
+
   pthread_t threads[num_threads];
   unsigned int thread_left = 0;
   unsigned int thread_split = length / num_threads;
