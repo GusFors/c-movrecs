@@ -218,7 +218,7 @@ void get_recommendations(unsigned int userid_a, struct movie *movies, struct rat
          ((double)(calc2.tv_sec - calc1.tv_sec) + (double)(calc2.tv_nsec - calc1.tv_nsec) / (double)1000000000L) * 1000);
   printf(RESET_OUTPUT);
 
-  merg_sort_movrec_by_rscore(movie_recs, num_recs, NUM_THREADS);
+   merg_sort_movrec_by_rscore(movie_recs, num_recs, NUM_THREADS);
 
   clock_t numr1 = clock();
 
@@ -227,7 +227,7 @@ void get_recommendations(unsigned int userid_a, struct movie *movies, struct rat
 
   unsigned int num_print = 10;
 
-  for (unsigned int i = 0; i < num_print; i++) {
+  for (unsigned int i = 0; i < num_print && i < num_recs; i++) {
     printf("movieid: %d, ratings: %d, score: %0.4f\n", movie_recs[i].movie_id, movie_recs[i].num_ratings, movie_recs[i].recommendation_score);
   }
 

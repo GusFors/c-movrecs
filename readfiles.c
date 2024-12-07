@@ -7,6 +7,10 @@
 #include "recommender.h"
 #include "readfiles.h"
 
+#ifndef DELIMITER
+#  define DELIMITER ","
+#endif
+
 ssize_t read_ratings_lines(void) {
   FILE *rfile;
   rfile = fopen("./data/csv-data/" DATA_PATH "/ratings.csv", "r");
@@ -61,13 +65,8 @@ ssize_t read_ratings_fast(struct rating *ratings_p) {
     unsigned int val_count = 0;
     unsigned int substr_index = 0;
 
-    // unsigned int uid_substr_index = 0;
-    // unsigned int mid_substr_index = 0;
-    // unsigned int r_substr_index = 0;
-    // unsigned int val_length = 0;
-
     for (unsigned int i = 0; i < line_length; i++) {
-      if (line[i] == ',') {
+      if (line[i] == DELIMITER[0]) {
         val_count++;
 
         if (val_count == 3)
@@ -90,10 +89,6 @@ ssize_t read_ratings_fast(struct rating *ratings_p) {
     ratings_p[index].user_id = (unsigned)strtoul(userid, NULL, 0);
     ratings_p[index].movie_id = (unsigned)strtoul(movieid, NULL, 0);
     ratings_p[index].rating = strtof(rating, NULL);
-
-    // ratings_p[index].user_id = atoi(userid);
-    // ratings_p[index].movie_id = atoi(movieid);
-    // ratings_p[index].rating = atof(rating);
 
     index++;
   }
@@ -147,7 +142,8 @@ ssize_t read_ratings(struct rating *ratings_p) {
   fscanf(rfile, "%*[^\n]");
 
   while (!feof(rfile)) {
-    read = fscanf(rfile, "%d,%d,%f,%*d\n", &ratings_p[records].user_id, &ratings_p[records].movie_id, &ratings_p[records].rating);
+    read = fscanf(rfile, "%d" DELIMITER "%d" DELIMITER "%f" DELIMITER "%*d\n", &ratings_p[records].user_id, &ratings_p[records].movie_id,
+                  &ratings_p[records].rating);
     if (read == 3) {
       records++;
     }
@@ -174,7 +170,7 @@ ssize_t read_movies(struct movie *movies_p, struct movie_title *mov_titles) {
   fscanf(mfile, "%*[^\n]");
 
   while (!feof(mfile)) {
-    read = fscanf(mfile, "%d,%255[^\n]", &movies_p[records].movie_id, mov_titles[records].title);
+    read = fscanf(mfile, "%d" DELIMITER "%255[^\n]", &movies_p[records].movie_id, mov_titles[records].title);
     // read = fscanf(mfile, "%d,%255[^\n]", &movies_p[records].movie_id, movies_p[records].title);
 
     movies_p[records].num_ratings = 0;

@@ -10,6 +10,8 @@ extern "C" {
 #define DATASET_SMALL 1
 #define DATASET_FULL 2
 #define DATASET_FULL32 3
+#define DATASET_ORIGINAL 4
+#define DATASET_EXAMPLE 5
 
 #define NODE_EXP_TEST_SET 1
 #define NODE_ORIGINAL_TEST_SET 2
@@ -17,7 +19,7 @@ extern "C" {
 
 // Set dataset path here or override with -D when compiling
 #ifndef DATASET
-#  define DATASET DATASET_SMALL
+#  define DATASET DATASET_EXAMPLE
 #endif
 
 #ifndef DATA_PATH
@@ -27,8 +29,20 @@ extern "C" {
 #    define DATA_PATH "full"
 #  elif DATASET == DATASET_FULL32
 #    define DATA_PATH "full32"
+#  elif DATASET == DATASET_ORIGINAL
+#    define DATA_PATH "original"
+#  elif DATASET == DATASET_EXAMPLE
+#    define DATA_PATH "originalexample"
 #  else
 #    define DATA_PATH "small"
+#  endif
+#endif
+
+#ifndef DELIMITER
+#  if DATASET == DATASET_ORIGINAL || DATASET == DATASET_EXAMPLE
+#    define DELIMITER ";"
+#  else
+#    define DELIMITER ","
 #  endif
 #endif
 
@@ -88,8 +102,8 @@ enum flags {
   SINGLE_THREADED = 1 << 2,
 };
 
-void get_recommendations(unsigned int userid, struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength, unsigned int rlength,
-                         unsigned int ulength, unsigned int flags);
+void get_recommendations(unsigned int userid, struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength,
+                         unsigned int rlength, unsigned int ulength, unsigned int flags);
 
 #ifdef __cplusplus
 }

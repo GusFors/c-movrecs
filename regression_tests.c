@@ -194,7 +194,7 @@ struct user_sim similarity_comparisons[] = {
 #  endif
 #else
 const char *TESTSET_TITLE = "NOT_IMPLEMENTED " DATA_PATH;
-struct user_sim similarity_comparisons[] = {};
+struct user_sim similarity_comparisons[] = {0};
 #endif
 
 int test_compare_sim_scores(struct user_sim *calculated_sim_scores) {
