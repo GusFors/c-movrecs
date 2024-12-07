@@ -25,6 +25,9 @@ int main(int argc, char *argv[]) {
     if (strncmp(argv[i], "-s", sizeof("-s")) == 0)
       flags |= SINGLE_THREADED;
 
+    if (strncmp(argv[i], "--ignore-filter", sizeof("--ignore-filter")) == 0)
+      flags |= IGNORE_EXTRA_FILTER;
+
     if (strncmp(argv[i], "-u", sizeof("-u")) == 0) {
       userid = (unsigned)strtoul(argv[i + 1], NULL, 0);
       printf("manually set id: %d\n", userid);

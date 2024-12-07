@@ -27,7 +27,6 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   printf("Calculating recommendations for user: %d, min_numratings: %d\n", userid_a, min_numratings);
 
   struct timespec total1, total2;
-
   clock_gettime(CLOCK_MONOTONIC, &total1);
 
   struct timespec calc1, calc2, sort1;
@@ -41,7 +40,6 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
 
   calc_num_ratings(movies, ratings, mlength, rlength);
 
-  // unsigned int min_numratings = 3; // take arg
   struct rating *filtered_ratings = malloc(sizeof(struct rating) * rlength);
   struct movie_compact *filtered_movies = malloc(sizeof(struct movie_compact) * mlength);
 
@@ -49,12 +47,13 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
 
   // redundant? filtered numratings matches exp more but without matches original scores
   unsigned int filtered_rlength = filter_numratings(movies, ratings, mlength, rlength, min_numratings, filtered_ratings);
-  // filtered_rlength = rlength;
-  // filtered_ratings = ratings;
+
+  if (flags & IGNORE_EXTRA_FILTER) {
+    filtered_rlength = rlength;
+    filtered_ratings = ratings;
+  }
 
   clock_t c1 = clock();
-
-  // unsigned int userid_a = 3;
 
   unsigned int numratings_a = count_user_ratings(userid_a, filtered_ratings, filtered_rlength);
   unsigned int *movseen_by_userid_a = malloc(numratings_a * sizeof(unsigned int));
@@ -227,7 +226,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   bubble_sort_numr_rscore(movie_recs, num_recs);
   printf("sort numratings: %.17gms\n", ((float)(clock() - numr1) / CLOCKS_PER_SEC) * 1000);
 
-  unsigned int num_print = 10;
+  unsigned int num_print = 16;
 
   for (unsigned int i = 0; i < num_print && i < num_recs; i++) {
     printf("movieid: %d, ratings: %d, score: %0.4f\n", movie_recs[i].movie_id, movie_recs[i].num_ratings, movie_recs[i].recommendation_score);
@@ -252,8 +251,9 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   free(simscores);
   free(ratings_notseen);
   free(movseen_by_userid_a);
-  free(filtered_ratings);
   free(filtered_movies);
+  if (!(flags & IGNORE_EXTRA_FILTER))
+    free(filtered_ratings);
 
   clock_gettime(CLOCK_MONOTONIC, &total2);
   printf("\ntotal recommendation time: " YELLOW_OUTPUT "%0.17f\n",
