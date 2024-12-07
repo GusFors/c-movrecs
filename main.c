@@ -12,13 +12,14 @@
 int main(int argc, char *argv[]) {
   unsigned int flags = 0b0000;
   unsigned int userid = 3;
+  unsigned int min_numratings = 3;
 
   for (int i = 1; i < argc; i++) {
     printf("arg[%d]: %s\n", i, argv[i]);
     if (strncmp(argv[i], "-t", sizeof("-t")) == 0)
       flags |= TESTS;
 
-    if (strncmp(argv[i], "-v", sizeof("-s")) == 0)
+    if (strncmp(argv[i], "-v", sizeof("-v")) == 0)
       flags |= VERBOSE_DEBUG;
 
     if (strncmp(argv[i], "-s", sizeof("-s")) == 0)
@@ -27,6 +28,12 @@ int main(int argc, char *argv[]) {
     if (strncmp(argv[i], "-u", sizeof("-u")) == 0) {
       userid = (unsigned)strtoul(argv[i + 1], NULL, 0);
       printf("manually set id: %d\n", userid);
+      i++;
+    }
+
+    if (strncmp(argv[i], "-n", sizeof("-n")) == 0) {
+      min_numratings = (unsigned)strtoul(argv[i + 1], NULL, 0);
+      printf("manually set min_numratings: %d\n", min_numratings);
       i++;
     }
   }
@@ -78,7 +85,7 @@ int main(int argc, char *argv[]) {
 
   unsigned int num_loops = 1;
   for (unsigned int i = 0; i < num_loops; i++)
-    get_recommendations(userid, movies, ratings, uids, (unsigned)mlength, (unsigned)rlength, (unsigned)ulength, flags);
+    get_recommendations(userid, min_numratings, movies, ratings, uids, (unsigned)mlength, (unsigned)rlength, (unsigned)ulength, flags);
 
   clock_gettime(CLOCK_MONOTONIC, &loop_total2);
 

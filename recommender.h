@@ -19,7 +19,7 @@ extern "C" {
 
 // Set dataset path here or override with -D when compiling
 #ifndef DATASET
-#  define DATASET DATASET_EXAMPLE
+#  define DATASET DATASET_SMALL
 #endif
 
 #ifndef DATA_PATH
@@ -102,8 +102,8 @@ enum flags {
   SINGLE_THREADED = 1 << 2,
 };
 
-void get_recommendations(unsigned int userid, struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength,
-                         unsigned int rlength, unsigned int ulength, unsigned int flags);
+void get_recommendations(unsigned int userid, unsigned int min_numratings, struct movie *movies, struct rating *ratings, unsigned int *uids,
+                         unsigned int mlength, unsigned int rlength, unsigned int ulength, unsigned int flags);
 
 #ifdef __cplusplus
 }

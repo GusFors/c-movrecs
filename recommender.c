@@ -22,8 +22,10 @@
     } while (0)
 #endif
 
-void get_recommendations(unsigned int userid_a, struct movie *movies, struct rating *ratings, unsigned int *uids, unsigned int mlength,
-                         unsigned int rlength, unsigned int ulength, unsigned int flags) {
+void get_recommendations(unsigned int userid_a, unsigned int min_numratings, struct movie *movies, struct rating *ratings, unsigned int *uids,
+                         unsigned int mlength, unsigned int rlength, unsigned int ulength, unsigned int flags) {
+  printf("Calculating recommendations for user: %d, min_numratings: %d\n", userid_a, min_numratings);
+
   struct timespec total1, total2;
 
   clock_gettime(CLOCK_MONOTONIC, &total1);
@@ -39,7 +41,7 @@ void get_recommendations(unsigned int userid_a, struct movie *movies, struct rat
 
   calc_num_ratings(movies, ratings, mlength, rlength);
 
-  unsigned int min_numratings = 3; // take arg
+  // unsigned int min_numratings = 3; // take arg
   struct rating *filtered_ratings = malloc(sizeof(struct rating) * rlength);
   struct movie_compact *filtered_movies = malloc(sizeof(struct movie_compact) * mlength);
 
