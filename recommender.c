@@ -44,8 +44,6 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   struct movie_compact *filtered_movies = malloc(sizeof(struct movie_compact) * mlength);
 
   unsigned int filtered_mlength = filter_movie_numratings(movies, mlength, min_numratings, filtered_movies);
-
-  // redundant? filtered numratings matches exp more but without matches original scores
   unsigned int filtered_rlength = filter_numratings(movies, ratings, mlength, rlength, min_numratings, filtered_ratings);
 
   if (flags & IGNORE_EXTRA_FILTER) {
@@ -235,16 +233,11 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   printf("total num recs: %d\n", num_recs);
 
   // TODO some test should still run, like testing duplicate movids
-  if (userid_a != 3) {
-    printf(YELLOW_OUTPUT "Not running tests as passed userid != 3" RESET_OUTPUT);
-
-  } else {
-    if (flags & TESTS) {
-      test_compare_movie_ids(movie_recs);
-      test_check_duplicated_movie_ids(movie_recs, num_recs);
-      test_compare_scores_diff(movie_recs, num_recs);
-      test_compare_sim_scores(simscores);
-    }
+  if (flags & TESTS) {
+    test_compare_movie_ids(movie_recs);
+    test_check_duplicated_movie_ids(movie_recs, num_recs);
+    test_compare_scores_diff(movie_recs, num_recs);
+    test_compare_sim_scores(simscores, userid_a);
   }
 
   free(wscores);
