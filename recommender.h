@@ -17,22 +17,35 @@ extern "C" {
 #define NODE_ORIGINAL_TEST_SET 2
 #define C_EXP_TEST_SET 3
 
+// #define DEFAULT_USER 3
+// #define DEFAULT_MIN_RATINGS 3
+
 // Set dataset path here or override with -D when compiling
 #ifndef DATASET
-#  define DATASET DATASET_ORIGINAL
+#  define DATASET DATASET_FULL32
 #endif
 
 #ifndef DATA_PATH
 #  if DATASET == DATASET_SMALL
 #    define DATA_PATH "small"
+#    define DEFAULT_USER 3
+#    define DEFAULT_MIN_RATINGS 3
 #  elif DATASET == DATASET_FULL
 #    define DATA_PATH "full"
+#    define DEFAULT_USER 3
+#    define DEFAULT_MIN_RATINGS 3
 #  elif DATASET == DATASET_FULL32
 #    define DATA_PATH "full32"
+#    define DEFAULT_USER 3
+#    define DEFAULT_MIN_RATINGS 3
 #  elif DATASET == DATASET_ORIGINAL
 #    define DATA_PATH "original"
+#    define DEFAULT_USER 4
+#    define DEFAULT_MIN_RATINGS 1
 #  elif DATASET == DATASET_EXAMPLE
 #    define DATA_PATH "originalexample"
+#    define DEFAULT_USER 3
+#    define DEFAULT_MIN_RATINGS 1
 #  else
 #    define DATA_PATH "small"
 #  endif

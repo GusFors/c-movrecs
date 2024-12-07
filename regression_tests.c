@@ -192,6 +192,9 @@ struct user_sim similarity_comparisons[] = {
     {606, 0.010390f}, {607, 0.026490f}, {608, 0.015504f}, {610, 0.032787f},
 };
 #  endif
+#elif DATASET == DATASET_ORIGINAL
+const char *TESTSET_TITLE = "ORIGINAL_NOT_IMPLEMENTED " DATA_PATH;
+struct user_sim similarity_comparisons[] = {0};
 #else
 const char *TESTSET_TITLE = "NOT_IMPLEMENTED " DATA_PATH;
 struct user_sim similarity_comparisons[] = {0};

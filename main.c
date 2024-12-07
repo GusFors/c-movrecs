@@ -11,8 +11,8 @@
 
 int main(int argc, char *argv[]) {
   unsigned int flags = 0b0000;
-  unsigned int userid = 3;
-  unsigned int min_numratings = 3;
+  unsigned int userid = DEFAULT_USER;
+  unsigned int min_numratings = DEFAULT_MIN_RATINGS;
 
   for (int i = 1; i < argc; i++) {
     printf("arg[%d]: %s\n", i, argv[i]);
