@@ -24,7 +24,7 @@ extern "C" {
 
 // Set dataset path here or override with -D when compiling
 #ifndef DATASET
-#  define DATASET DATASET_SMALL
+#  define DATASET DATASET_FULL32
 #endif
 
 #ifndef DATA_PATH
@@ -125,7 +125,7 @@ enum flags {
   TESTS = 1 << 0,
   VERBOSE_DEBUG = 1 << 1,
   SINGLE_THREADED = 1 << 2,
-  IGNORE_EXTRA_FILTER = 1 << 3,
+  RATINGS_EXTRA_FILTER = 1 << 3,
 };
 
 void get_recommendations(unsigned int userid, unsigned int min_numratings, struct movie *movies, struct rating *ratings, unsigned int *uids,

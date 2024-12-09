@@ -40,15 +40,16 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
 
   calc_num_ratings(movies, ratings, mlength, rlength);
 
-  struct rating *filtered_ratings = malloc(sizeof(struct rating) * rlength);
+  struct rating *filtered_ratings;
   struct movie_compact *filtered_movies = malloc(sizeof(struct movie_compact) * mlength);
 
   unsigned int filtered_mlength = filter_movie_numratings(movies, mlength, min_numratings, filtered_movies);
-  unsigned int filtered_rlength = filter_numratings(movies, ratings, mlength, rlength, min_numratings, filtered_ratings);
+  unsigned int filtered_rlength = rlength;
+  filtered_ratings = ratings;
 
-  if (flags & IGNORE_EXTRA_FILTER) {
-    filtered_rlength = rlength;
-    filtered_ratings = ratings;
+  if (flags & RATINGS_EXTRA_FILTER) {
+    filtered_ratings = malloc(sizeof(struct rating) * rlength);
+    filtered_rlength = filter_numratings(movies, ratings, mlength, rlength, min_numratings, filtered_ratings);
   }
 
   clock_t c1 = clock();
@@ -245,7 +246,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   free(ratings_notseen);
   free(movseen_by_userid_a);
   free(filtered_movies);
-  if (!(flags & IGNORE_EXTRA_FILTER))
+  if ((flags & RATINGS_EXTRA_FILTER))
     free(filtered_ratings);
 
   clock_gettime(CLOCK_MONOTONIC, &total2);
