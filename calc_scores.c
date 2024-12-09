@@ -10,17 +10,27 @@
 
 unsigned int weighted_scores_short(struct user_sim *simscores, struct rating *ratings_notseen, unsigned int simlen, unsigned int notseen_cnt,
                                    struct weighted_score *wscores) {
-  unsigned int ws_len = 0;
   struct timespec t1, t2;
-
   clock_gettime(CLOCK_MONOTONIC, &t1);
-  merg_sort_rating_by_uid(ratings_notseen, notseen_cnt, NUM_THREADS);
+
+  int is_sorted = 1;
+  for (unsigned int i = 0; i < notseen_cnt - 1; i++) {
+    if (ratings_notseen[i].user_id > ratings_notseen[i + 1].user_id)
+      is_sorted = 0;
+  }
+
+  if (!is_sorted) {
+    PRINT_VERBOSE("INFO: weighted_scores_short, ratings not sorted by user_id, sorting before continuing\n");
+    merg_sort_rating_by_uid(ratings_notseen, notseen_cnt, NUM_THREADS);
+  }
+
   clock_gettime(CLOCK_MONOTONIC, &t2);
 
-  printf("rating by uid time: " YELLOW_OUTPUT "%0.17f\n",
+  printf("rating by uid time: " YELLOW_OUTPUT "%0.17f" RESET_OUTPUT "\n",
          ((double)(t2.tv_sec - t1.tv_sec) + (double)(t2.tv_nsec - t1.tv_nsec) / (double)1000000000L) * 1000);
   printf(RESET_OUTPUT);
 
+  unsigned int ws_len = 0;
   unsigned int counted_indexes = 0;
   unsigned int is_curr_id = 0;
 

@@ -13,15 +13,6 @@
 #include "regression_tests.h"
 #include "calc_scores.h"
 
-#ifndef VERBOSE_INFO
-#  define PRINT_VERBOSE(...) while (0)
-#else
-#  define PRINT_VERBOSE(...)                                                                                                                         \
-    do {                                                                                                                                             \
-      printf(__VA_ARGS__);                                                                                                                           \
-    } while (0)
-#endif
-
 void get_recommendations(unsigned int userid_a, unsigned int min_numratings, struct movie *movies, struct rating *ratings, unsigned int *uids,
                          unsigned int mlength, unsigned int rlength, unsigned int ulength, unsigned int flags) {
   printf("Calculating recommendations for user: %d, min_numratings: %d\n", userid_a, min_numratings);
@@ -80,6 +71,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   }
 
   printf("r1 in %.17gms\n", ((float)(clock() - r1) / CLOCKS_PER_SEC) * 1000);
+  merg_sort_rating_by_uid(filtered_ratings, filtered_rlength, NUM_THREADS);
 
   clock_t notseen_t1 = clock();
   unsigned int notseen_cnt = 0;
@@ -119,7 +111,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
 
   struct timespec u1, u2;
   clock_gettime(CLOCK_MONOTONIC, &u1);
-  merg_sort_rating_by_uid(filtered_ratings, filtered_rlength, NUM_THREADS);
+  // merg_sort_rating_by_uid(filtered_ratings, filtered_rlength, NUM_THREADS);
   clock_gettime(CLOCK_MONOTONIC, &u2);
 
   printf("euclidian sort uids in: " YELLOW_OUTPUT "%0.17f\n",

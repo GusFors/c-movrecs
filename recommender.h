@@ -5,6 +5,15 @@
 extern "C" {
 #endif
 
+#ifndef VERBOSE_INFO
+#  define PRINT_VERBOSE(...) while (0)
+#else
+#  define PRINT_VERBOSE(...)                                                                                                                         \
+    do {                                                                                                                                             \
+      printf(__VA_ARGS__);                                                                                                                           \
+    } while (0)
+#endif
+
 #define NUM_THREADS 4
 
 #define DATASET_SMALL 1
@@ -24,7 +33,7 @@ extern "C" {
 
 // Set dataset path here or override with -D when compiling
 #ifndef DATASET
-#  define DATASET DATASET_FULL32
+#  define DATASET DATASET_SMALL_ALT
 #endif
 
 #ifndef DATA_PATH
