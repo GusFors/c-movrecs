@@ -69,7 +69,11 @@ extern "C" {
 
 // Set test comparison set here or with -D
 #ifndef TEST_SET
-#  define TEST_SET NODE_ORIGINAL_TEST_SET
+#  if DATASET == DATASET_SMALL_ALT
+#    define TEST_SET NODE_ORIGINAL_DIFF_USER_SET
+#  else
+#    define TEST_SET NODE_ORIGINAL_TEST_SET
+#  endif
 #endif
 
 struct rating {
