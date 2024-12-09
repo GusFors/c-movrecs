@@ -38,3 +38,4 @@ out/
 perf.data*
 .clang-format
 testscores.c
+full_test_data*

@@ -210,6 +210,15 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
          ((double)(calc2.tv_sec - calc1.tv_sec) + (double)(calc2.tv_nsec - calc1.tv_nsec) / (double)1000000000L) * 1000);
   printf(RESET_OUTPUT);
 
+  // TODO some test should still run, like testing duplicate movids
+  if (flags & TESTS) {
+    test_compare_movie_ids(movie_recs);
+    test_check_duplicated_movie_ids(movie_recs, num_recs);
+    test_compare_scores_diff(movie_recs, num_recs);
+    test_compare_sim_scores(simscores, simlen, userid_a);
+    test_compare_movrec_movids(movie_recs, userid_a);
+  }
+
   merg_sort_movrec_by_rscore(movie_recs, num_recs, NUM_THREADS);
 
   clock_t numr1 = clock();
@@ -224,14 +233,6 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   }
 
   printf("total num recs: %d\n", num_recs);
-
-  // TODO some test should still run, like testing duplicate movids
-  if (flags & TESTS) {
-    test_compare_movie_ids(movie_recs);
-    test_check_duplicated_movie_ids(movie_recs, num_recs);
-    test_compare_scores_diff(movie_recs, num_recs);
-    test_compare_sim_scores(simscores, userid_a);
-  }
 
   free(wscores);
   free(simscores);
