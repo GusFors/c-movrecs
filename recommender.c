@@ -216,7 +216,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
     test_check_duplicated_movie_ids(movie_recs, num_recs);
     test_compare_scores_diff(movie_recs, num_recs);
     test_compare_sim_scores(simscores, simlen, userid_a);
-    test_compare_movrec_movids(movie_recs, num_recs, userid_a);
+    test_movie_recommendation_tests(movie_recs, num_recs, userid_a);
   }
 
   merg_sort_movrec_by_rscore(movie_recs, num_recs, NUM_THREADS);

@@ -95,7 +95,7 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
                                                int compare_func(void *, void *)),
                                int compare_func(void *, void *)) {
 
-  // check if sorted first here?                                
+  // check if sorted first here?
 
   if (length <= num_threads)
     num_threads = 1;

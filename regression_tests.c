@@ -14,9 +14,9 @@
 #ifndef WARN_INFO
 #  define PRINT_WARN(...) while (0)
 #else
-#  define PRINT_WARN(...)                                                                                                                            \
-    do {                                                                                                                                             \
-      printf(__VA_ARGS__);                                                                                                                           \
+#  define PRINT_WARN(...)                                                                                                                                 \
+    do {                                                                                                                                                  \
+      printf(__VA_ARGS__);                                                                                                                                \
     } while (0)
 #endif
 
@@ -73,7 +73,6 @@ struct movie_recommendation movie_rec_comparisons[] = {
     {3916, 41, 3.4765f},  {3917, 15, 3.8723f},   {3918, 9, 3.5241f},   {3925, 6, 3.7426f},    {3927, 6, 2.8726f},   {3928, 4, 4.0787f},
     {3930, 4, 2.6740f},   {3937, 4, 2.0955f},    {3943, 8, 3.4112f},
 };
-
 #    endif
 #  else // C exp test set
 const char *TESTSET_TITLE = "c_version_exp_" DATA_PATH;
@@ -159,12 +158,11 @@ struct user_sim similarity_comparisons[] = {0};
 struct movie_recommendation movie_rec_comparisons[] ={0}
 #endif
 
-// TODO write separate tests for scores and id
-int test_compare_movrec_movids(struct movie_recommendation *calculated_movie_recs, unsigned int calculated_mov_rec_length, unsigned int user_id) {
-  printf(YELLOW_OUTPUT "\ntest compare movie recommendations movids %s\n" RESET_OUTPUT, TESTSET_TITLE);
+int test_movie_recommendation_tests(struct movie_recommendation *calculated_movie_recs, unsigned int calculated_mov_rec_length, unsigned int user_id) {
+  printf(YELLOW_OUTPUT "\ntest - compare movie recommendations - %s\n" RESET_OUTPUT, TESTSET_TITLE);
 
 #ifndef MATCHING_TESTS
-  printf("No matching tests for current dataset, ignoring test\n");
+  printf("No matching movie recommendation tests for current dataset, ignoring test\n");
   return RETURN_FAIL;
 #endif
 
@@ -173,23 +171,78 @@ int test_compare_movrec_movids(struct movie_recommendation *calculated_movie_rec
     return RETURN_FAIL;
   }
 
+  test_compare_movrec_movids(calculated_movie_recs, calculated_mov_rec_length);
+  test_compare_movrec_numratings(calculated_movie_recs, calculated_mov_rec_length);
+  test_compare_movrec_scores(calculated_movie_recs, calculated_mov_rec_length);
+  printf("\n");
+
+  return 0;
+}
+
+int test_compare_movrec_movids(struct movie_recommendation *calculated_movie_recs, unsigned int calculated_mov_rec_length) {
   unsigned int num_exact_matchings_ids = 0;
+  unsigned int num_warnings = 0;
+
+#ifdef FULL_TEST_DATA
+  for (size_t i = 0; i < ARRAY_LEN(movie_rec_comparisons); i++) {
+    if (movie_rec_comparisons[i].movie_id != calculated_movie_recs[i].movie_id)
+      printf("" FAIL_RED " full comparison, movie id doesn't match: expected movid: %d, actual: %d\n", movie_rec_comparisons[i].movie_id,
+             calculated_movie_recs[i].movie_id);
+  }
+#endif
+
+  for (size_t i = 0; i < ARRAY_LEN(movie_rec_comparisons); i++) {
+    for (size_t j = 0; j < calculated_mov_rec_length; j++) {
+      if (movie_rec_comparisons[i].movie_id == calculated_movie_recs[j].movie_id)
+        num_exact_matchings_ids++;
+    }
+  }
+
+  printf("num_exact_matchings_movids: %d/%lu ", num_exact_matchings_ids, ARRAY_LEN(movie_rec_comparisons));
+
+  if (num_exact_matchings_ids < ARRAY_LEN(movie_rec_comparisons)) {
+    printf("" FAIL_RED "\n");
+    return RETURN_FAIL;
+  }
+
+  num_warnings ? printf(PASS_GREEN " - %d warnings\n", num_warnings) : printf(PASS_GREEN "\n");
+  return RETURN_SUCCESS;
+}
+
+int test_compare_movrec_numratings(struct movie_recommendation *calculated_movie_recs, unsigned int calculated_mov_rec_length) {
   unsigned int num_matching_numratings = 0;
+  unsigned int num_warnings = 0;
+
+  for (size_t i = 0; i < ARRAY_LEN(movie_rec_comparisons); i++) {
+    for (size_t j = 0; j < calculated_mov_rec_length; j++) {
+      if (movie_rec_comparisons[i].movie_id == calculated_movie_recs[j].movie_id) {
+        if (movie_rec_comparisons[i].num_ratings == calculated_movie_recs[j].num_ratings)
+          num_matching_numratings++;
+        else
+          printf("" FAIL_RED " numratings diff for movieid: %d, expected numratings: %d, actual: %d\n", movie_rec_comparisons[i].movie_id,
+                 movie_rec_comparisons[i].num_ratings, calculated_movie_recs[j].num_ratings);
+      }
+    }
+  }
+
+  printf("num_matchings_numratings: %d/%lu ", num_matching_numratings, ARRAY_LEN(movie_rec_comparisons));
+
+  if (num_matching_numratings < ARRAY_LEN(movie_rec_comparisons)) {
+    printf("" FAIL_RED "\n");
+    return RETURN_FAIL;
+  }
+
+  num_warnings ? printf(PASS_GREEN " - %d warnings\n", num_warnings) : printf(PASS_GREEN "\n");
+  return RETURN_SUCCESS;
+}
+
+int test_compare_movrec_scores(struct movie_recommendation *calculated_movie_recs, unsigned int calculated_mov_rec_length) {
   unsigned int num_matchings_scores = 0;
   unsigned int num_warnings = 0;
 
   for (size_t i = 0; i < ARRAY_LEN(movie_rec_comparisons); i++) {
     for (size_t j = 0; j < calculated_mov_rec_length; j++) {
       if (movie_rec_comparisons[i].movie_id == calculated_movie_recs[j].movie_id) {
-        num_exact_matchings_ids++;
-
-        if (movie_rec_comparisons[i].num_ratings == calculated_movie_recs[j].num_ratings) {
-          num_matching_numratings++;
-        } else {
-          printf("" FAIL_RED " numratings diff for movieid: %d, expected numratings: %d, actual: %d\n", movie_rec_comparisons[i].movie_id,
-                 movie_rec_comparisons[i].num_ratings, calculated_movie_recs[j].num_ratings);
-        }
-
         double score_diff = fabs(movie_rec_comparisons[i].recommendation_score - calculated_movie_recs[j].recommendation_score);
 
         if (score_diff > 0.005) {
@@ -210,19 +263,14 @@ int test_compare_movrec_movids(struct movie_recommendation *calculated_movie_rec
           num_matchings_scores++;
           continue;
         }
-
-        //  printf("" FAIL_RED " movie id doesn't match: expected movid: %d, actual: %d\n", movie_rec_comparisons[i].movie_id,
-        //              calculated_movie_recs[j].movie_id);
       }
     }
   }
 
-  printf("%s num_matchings_movrec_scores: %d/%lu\n", TESTSET_TITLE, num_matchings_scores, ARRAY_LEN(movie_rec_comparisons));
-  printf("%s num_matchings_numratings: %d/%lu\n", TESTSET_TITLE, num_matching_numratings, ARRAY_LEN(movie_rec_comparisons));
-  printf("%s num_exact_matchings_movids: %d/%lu ", TESTSET_TITLE, num_exact_matchings_ids, ARRAY_LEN(movie_rec_comparisons));
+  printf("num_matchings_movrec_scores: %d/%lu ", num_matchings_scores, ARRAY_LEN(movie_rec_comparisons));
 
-  if (num_exact_matchings_ids < ARRAY_LEN(movie_rec_comparisons)) {
-    printf("%s movie recommendation test: " FAIL_RED, TESTSET_TITLE);
+  if (num_matchings_scores < ARRAY_LEN(movie_rec_comparisons)) {
+    printf("" FAIL_RED "\n");
     return RETURN_FAIL;
   }
 
@@ -302,8 +350,7 @@ int test_compare_sim_scores(struct user_sim *calculated_sim_scores, unsigned int
   }
 
   printf("similarity score test: ");
-  num_warnings ? printf(PASS_GREEN " - %d warnings", num_warnings)
-               : printf("%d/%lu " PASS_GREEN, num_matchings_scores, ARRAY_LEN(similarity_comparisons));
+  num_warnings ? printf(PASS_GREEN " - %d warnings", num_warnings) : printf("%d/%lu " PASS_GREEN, num_matchings_scores, ARRAY_LEN(similarity_comparisons));
   return RETURN_SUCCESS;
 }
 
@@ -311,21 +358,19 @@ int test_compare_movie_ids(struct movie_recommendation *calculated_recommendatio
   printf(YELLOW_OUTPUT "\ntest compare movie ids\n" RESET_OUTPUT);
 
   unsigned int node_test_movids_old_version[100] = {
-      26810, 2239,   6460,  7121,  334,   174053, 1964,  177593, 4441,   7008,   2511,   4956,  2925,   6051,   9010,  2351,  31364,
-      4444,  3224,   3384,  57274, 213,   168418, 30803, 5833,   115122, 87234,  27801,  7842,  3727,   121231, 55363, 58301, 85736,
-      90439, 898,    98154, 6345,  80139, 1836,   51931, 104879, 117192, 26680,  2436,   27397, 103688, 106642, 59141, 942,   3152,
-      123,   112804, 3972,  4765,  3771,  26171,  2131,  1046,   112175, 55167,  2349,   47423, 3451,   4334,   58295, 1303,  87529,
-      80906, 42632,  1733,  1238,  1104,  893,    1611,  80831,  3342,   171763, 187595, 3201,  2035,   1217,   3275,  1273,  3681,
-      89904, 1051,   5466,  1178,  6618,  27831,  26082, 8042,   6306,   162,    6235,   1041,  5404,   3111,   2360,
+      26810, 2239,   6460,   7121,  334,  174053, 1964,   177593, 4441,  7008,  2511,   4956,  2925,   6051,  9010,  2351,  31364, 4444,   3224,   3384,
+      57274, 213,    168418, 30803, 5833, 115122, 87234,  27801,  7842,  3727,  121231, 55363, 58301,  85736, 90439, 898,   98154, 6345,   80139,  1836,
+      51931, 104879, 117192, 26680, 2436, 27397,  103688, 106642, 59141, 942,   3152,   123,   112804, 3972,  4765,  3771,  26171, 2131,   1046,   112175,
+      55167, 2349,   47423,  3451,  4334, 58295,  1303,   87529,  80906, 42632, 1733,   1238,  1104,   893,   1611,  80831, 3342,  171763, 187595, 3201,
+      2035,  1217,   3275,   1273,  3681, 89904,  1051,   5466,   1178,  6618,  27831,  26082, 8042,   6306,  162,   6235,  1041,  5404,   3111,   2360,
   };
 
   unsigned int cver_test_movids_exp[100] = {
-      26810, 2239, 6460,  7121,  334,   174053, 1964,   177593, 4441,   7008,  2511,   4956,   2925,   6051,   9010,  2351,  31364,
-      4444,  3224, 3384,  57274, 213,   168418, 30803,  5833,   115122, 87234, 27801,  7842,   3727,   121231, 55363, 58301, 85736,
-      90439, 898,  6345,  80139, 1836,  51931,  104879, 117192, 26680,  98154, 2436,   27397,  103688, 106642, 59141, 942,   3152,
-      123,   3972, 4765,  3771,  26171, 2131,   1046,   112175, 55167,  2349,  47423,  3451,   112804, 4334,   58295, 1303,  80906,
-      87529, 2035, 42632, 1733,  1238,  1104,   893,    1611,   80831,  3342,  171763, 187595, 3201,   1217,   3275,  1273,  3681,
-      1051,  5466, 1178,  89904, 6618,  27831,  26082,  8042,   6306,   162,   1041,   6235,   5404,   3111,   2360,
+      26810,  2239,   6460,   7121,   334,  174053, 1964,   177593, 4441,  7008, 2511,   4956,  2925,  6051,  9010,  2351,  31364, 4444,  3224,   3384,
+      57274,  213,    168418, 30803,  5833, 115122, 87234,  27801,  7842,  3727, 121231, 55363, 58301, 85736, 90439, 898,   6345,  80139, 1836,   51931,
+      104879, 117192, 26680,  98154,  2436, 27397,  103688, 106642, 59141, 942,  3152,   123,   3972,  4765,  3771,  26171, 2131,  1046,  112175, 55167,
+      2349,   47423,  3451,   112804, 4334, 58295,  1303,   80906,  87529, 2035, 42632,  1733,  1238,  1104,  893,   1611,  80831, 3342,  171763, 187595,
+      3201,   1217,   3275,   1273,   3681, 1051,   5466,   1178,   89904, 6618, 27831,  26082, 8042,  6306,  162,   1041,  6235,  5404,  3111,   2360,
   };
 
   unsigned int num_exact_matchings_ids_node_old = 0;
@@ -594,8 +639,7 @@ int test_compare_sim_scores_n(struct user_sim *calculated_sim_scores, struct tes
 
     if (score_diff > 0.001) {
       PRINT_WARN("" WARNING_YELLOW " small simscore diff for userid: %d, expected simscore: %f, actual: %f\n",
-                 comparison_scores->similarity_scores[i].user_id, comparison_scores->similarity_scores[i].simscore,
-                 calculated_sim_scores[i].simscore);
+                 comparison_scores->similarity_scores[i].user_id, comparison_scores->similarity_scores[i].simscore, calculated_sim_scores[i].simscore);
       num_warnings++;
       num_matchings_scores++;
       continue;

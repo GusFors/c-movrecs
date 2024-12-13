@@ -29,8 +29,11 @@ struct test_comparison_data {
 
 int test_compare_sim_scores(struct user_sim *calculated_sim_scores, unsigned int calculated_sim_scores_length, unsigned int user_id);
 int test_compare_sim_scores_n(struct user_sim *calculated_sim_scores, struct test_comparison_data *comparison_scores);
+int test_movie_recommendation_tests(struct movie_recommendation *calculated_movie_recs, unsigned int calculated_mov_rec_length, unsigned int user_id);
+int test_compare_movrec_scores(struct movie_recommendation *calculated_movie_recs, unsigned int calculated_mov_rec_length);
+int test_compare_movrec_numratings(struct movie_recommendation *calculated_movie_recs, unsigned int calculated_mov_rec_length);
 int test_compare_movie_ids(struct movie_recommendation *calculated_recommendations);
-int test_compare_movrec_movids(struct movie_recommendation *calculated_movie_recs, unsigned int calculated_mov_rec_length, unsigned int user_id);
+int test_compare_movrec_movids(struct movie_recommendation *calculated_movie_recs, unsigned int calculated_mov_rec_length);
 int test_check_duplicated_movie_ids(struct movie_recommendation *calculated_recommendations, unsigned int num_recs);
 int test_compare_scores_diff(struct movie_recommendation *calculated_recommendations, unsigned int num_recs);
 void node_old_comparisons(struct test_comparison_data *t);
