@@ -355,11 +355,11 @@ void bubble_sort_numr(struct movie_recommendation movie_recs[], unsigned int num
 
   for (unsigned int i = 0; i < num_recs - 1; i++) {
     early_break = 0;
-    for (unsigned int y = 0; y < num_recs - 1; y++) {
-      if (movie_recs[y].num_ratings < movie_recs[y + 1].num_ratings) {
-        struct movie_recommendation *first_element = &movie_recs[y];
+    for (unsigned int j = 0; j < num_recs - 1; j++) {
+      if (movie_recs[j].num_ratings < movie_recs[j + 1].num_ratings) {
+        struct movie_recommendation *first_element = &movie_recs[j];
         struct movie_recommendation tempcopy = *first_element;
-        struct movie_recommendation *second_element = &movie_recs[y + 1];
+        struct movie_recommendation *second_element = &movie_recs[j + 1];
 
         *first_element = *second_element;
         *second_element = tempcopy;
@@ -377,12 +377,12 @@ void bubble_sort_numr_rscore(struct movie_recommendation movie_recs[], unsigned 
 
   for (unsigned int i = 0; i < num_recs - 1; i++) {
     early_break = 0;
-    for (unsigned int y = 0; y < num_recs - 1; y++) {
-      if ((fabs(movie_recs[y].recommendation_score - movie_recs[y + 1].recommendation_score)) <= 0.0001 &&
-          movie_recs[y].num_ratings < movie_recs[y + 1].num_ratings) {
-        struct movie_recommendation *first_element = &movie_recs[y];
+    for (unsigned int j = 0; j < num_recs - 1; j++) {
+      if ((fabs(movie_recs[j].recommendation_score - movie_recs[j + 1].recommendation_score)) <= 0.0001 &&
+          movie_recs[j].num_ratings < movie_recs[j + 1].num_ratings) {
+        struct movie_recommendation *first_element = &movie_recs[j];
         struct movie_recommendation tempcopy = *first_element;
-        struct movie_recommendation *second_element = &movie_recs[y + 1];
+        struct movie_recommendation *second_element = &movie_recs[j + 1];
 
         *first_element = *second_element;
         *second_element = tempcopy;
@@ -400,12 +400,12 @@ void bubble_sort_numr_rscore_int(struct movie_recommendation movie_recs[], unsig
 
   for (unsigned int i = 0; i < num_recs - 1; i++) {
     early_break = 0;
-    for (unsigned int y = 0; y < num_recs - 1; y++) {
-      if (((unsigned int)(movie_recs[y].recommendation_score * 10) == (unsigned int)(movie_recs[y + 1].recommendation_score * 10)) &&
-          movie_recs[y].num_ratings < movie_recs[y + 1].num_ratings) {
-        struct movie_recommendation *first_element = &movie_recs[y];
+    for (unsigned int j = 0; j < num_recs - 1; j++) {
+      if (((unsigned int)(movie_recs[j].recommendation_score * 10) == (unsigned int)(movie_recs[j + 1].recommendation_score * 10)) &&
+          movie_recs[j].num_ratings < movie_recs[j + 1].num_ratings) {
+        struct movie_recommendation *first_element = &movie_recs[j];
         struct movie_recommendation tempcopy = *first_element;
-        struct movie_recommendation *second_element = &movie_recs[y + 1];
+        struct movie_recommendation *second_element = &movie_recs[j + 1];
 
         *first_element = *second_element;
         *second_element = tempcopy;
@@ -423,11 +423,11 @@ void bubble_sort_uid(struct rating movie_recs[], unsigned int num_recs) {
 
   for (unsigned int i = 0; i < num_recs - 1; i++) {
     early_break = 0;
-    for (unsigned int y = 0; y < num_recs - 1; y++) {
-      if ((movie_recs[y].user_id > movie_recs[y + 1].user_id)) {
-        struct rating *first_element = &movie_recs[y];
+    for (unsigned int j = 0; j < num_recs - 1; j++) {
+      if ((movie_recs[j].user_id > movie_recs[j + 1].user_id)) {
+        struct rating *first_element = &movie_recs[j];
         struct rating tempcopy = *first_element;
-        struct rating *second_element = &movie_recs[y + 1];
+        struct rating *second_element = &movie_recs[j + 1];
         *first_element = *second_element;
         *second_element = tempcopy;
         early_break = 1;

@@ -154,8 +154,10 @@ struct user_sim similarity_comparisons[] = {0};
 struct movie_recommendation movie_rec_comparisons[] ={0}
 #else
 const char *TESTSET_TITLE = "NOT_IMPLEMENTED " DATA_PATH;
+#  ifndef FULL_TEST_DATA
 struct user_sim similarity_comparisons[] = {0};
-struct movie_recommendation movie_rec_comparisons[] ={0}
+struct movie_recommendation movie_rec_comparisons[] = {0};
+#  endif
 #endif
 
 int test_movie_recommendation_tests(struct movie_recommendation *calculated_movie_recs, unsigned int calculated_mov_rec_length, unsigned int user_id) {

@@ -35,21 +35,21 @@ unsigned int weighted_scores_short(struct user_sim *simscores, struct rating *ra
   unsigned int is_curr_id = 0;
 
   for (unsigned int i = 0, l = 0; i < simlen; i++) {
-    for (unsigned int y = counted_indexes; y < notseen_cnt; y++) {
-      if (simscores[i].user_id == ratings_notseen[y].user_id) {
+    for (unsigned int j = counted_indexes; j < notseen_cnt; j++) {
+      if (simscores[i].user_id == ratings_notseen[j].user_id) {
 
         if (is_curr_id == 0)
           is_curr_id = 1;
 
-        wscores[l].movie_id = ratings_notseen[y].movie_id;
+        wscores[l].movie_id = ratings_notseen[j].movie_id;
         wscores[l].simscore = simscores[i].simscore;
-        wscores[l].weighted_rating = (simscores[i].simscore * ratings_notseen[y].rating);
+        wscores[l].weighted_rating = (simscores[i].simscore * ratings_notseen[j].rating);
 
         l++;
         ws_len++;
-      } else if (is_curr_id && simscores[i].user_id != ratings_notseen[y].user_id) {
+      } else if (is_curr_id && simscores[i].user_id != ratings_notseen[j].user_id) {
         is_curr_id = 0;
-        counted_indexes = y;
+        counted_indexes = j;
         break;
       }
     }
@@ -71,20 +71,20 @@ unsigned int euclidianscores(unsigned int userid_a, struct rating *ratings_a, un
     float sim = 0;
     unsigned int n = 0;
 
-    for (unsigned int y = checked_rindex; y < filtered_rlength; y++) {
-      if (filtered_ratings[y].user_id == userid_b) {
+    for (unsigned int j = checked_rindex; j < filtered_rlength; j++) {
+      if (filtered_ratings[j].user_id == userid_b) {
         if (is_curr_user == 0) {
           is_curr_user = 1;
         }
-      } else if (is_curr_user && (filtered_ratings[y].user_id != userid_b)) {
+      } else if (is_curr_user && (filtered_ratings[j].user_id != userid_b)) {
         is_curr_user = 0;
-        checked_rindex = y;
+        checked_rindex = j;
         break;
       }
 
-      for (unsigned int j = 0; j < numratings_a; j++) {
-        if (filtered_ratings[y].movie_id == ratings_a[j].movie_id) {
-          sim += ((ratings_a[j].rating - filtered_ratings[y].rating) * (ratings_a[j].rating - filtered_ratings[y].rating));
+      for (unsigned int k = 0; k < numratings_a; k++) {
+        if (filtered_ratings[j].movie_id == ratings_a[k].movie_id) {
+          sim += ((ratings_a[k].rating - filtered_ratings[j].rating) * (ratings_a[k].rating - filtered_ratings[j].rating));
           n += 1;
         }
       }

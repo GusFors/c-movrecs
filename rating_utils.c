@@ -12,14 +12,14 @@ void calc_num_ratings(struct movie *movies, struct rating *ratings, unsigned int
 
   for (unsigned int i = 0; i < mlength; i++) {
     unsigned int num_mratings = 0;
-    for (unsigned int y = already_checked_indexes; y < rlength; y++) {
-      if (movies[i].movie_id == ratings[y].movie_id) {
+    for (unsigned int j = already_checked_indexes; j < rlength; j++) {
+      if (movies[i].movie_id == ratings[j].movie_id) {
         if (is_curr_mov_id == 0) {
           is_curr_mov_id = 1;
-          already_checked_indexes = y;
+          already_checked_indexes = j;
         }
         num_mratings++;
-      } else if (is_curr_mov_id && movies[i].movie_id != ratings[y].movie_id) {
+      } else if (is_curr_mov_id && movies[i].movie_id != ratings[j].movie_id) {
         is_curr_mov_id = 0;
         break;
       }
@@ -41,19 +41,19 @@ unsigned int filter_numratings(struct movie *movies, struct rating *ratings, uns
   unsigned int checked_indexes = 0;
 
   for (unsigned int i = 0; i < mlength; i++) {
-    for (unsigned int y = checked_indexes; y < rlength; y++) {
-      if (movies[i].movie_id == ratings[y].movie_id) {
+    for (unsigned int j = checked_indexes; j < rlength; j++) {
+      if (movies[i].movie_id == ratings[j].movie_id) {
         if (is_curr_mov == 0) {
           is_curr_mov = 1;
-          checked_indexes = y;
+          checked_indexes = j;
         }
 
         if (movies[i].num_ratings >= min_numratings) {
-          filtered_ratings[filtered_rlength] = ratings[y];
+          filtered_ratings[filtered_rlength] = ratings[j];
           filtered_rlength++;
         }
 
-      } else if (is_curr_mov && movies[i].movie_id != ratings[y].movie_id) {
+      } else if (is_curr_mov && movies[i].movie_id != ratings[j].movie_id) {
         is_curr_mov = 0;
         break;
       }

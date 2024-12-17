@@ -77,8 +77,8 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   unsigned int notseen_cnt = 0;
   for (unsigned int i = 0; i < filtered_rlength; i++) {
     unsigned int isseen = 0;
-    for (unsigned int z = 0; z < numratings_a; z++) {
-      if (movseen_by_userid_a[z] == filtered_ratings[i].movie_id) {
+    for (unsigned int j = 0; j < numratings_a; j++) {
+      if (movseen_by_userid_a[j] == filtered_ratings[i].movie_id) {
         isseen = 1;
       }
     }
@@ -91,8 +91,8 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   unsigned int notseen_cnt2 = 0;
   for (unsigned int i = 0; i < filtered_rlength; i++) {
     unsigned int isseen = 0;
-    for (unsigned int z = 0; z < numratings_a; z++) {
-      if (movseen_by_userid_a[z] == filtered_ratings[i].movie_id) {
+    for (unsigned int j = 0; j < numratings_a; j++) {
+      if (movseen_by_userid_a[j] == filtered_ratings[i].movie_id) {
         isseen = 1;
         // j++;
       }
@@ -147,7 +147,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   clock_gettime(CLOCK_MONOTONIC, &wsort1);
   merg_sort_ws_by_movid(wscores, ws_len, NUM_THREADS);
   clock_gettime(CLOCK_MONOTONIC, &wsort2);
-  
+
   printf("ws sorted in: " YELLOW_OUTPUT "%0.17f" RESET_OUTPUT "\n",
          ((double)(wsort2.tv_sec - wsort1.tv_sec) + (double)(wsort2.tv_nsec - wsort1.tv_nsec) / (double)1000000000L) * 1000);
 
@@ -182,15 +182,15 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
     float simscore_sum = 0;
     float recommendation_score = 0;
 
-    for (unsigned int y = checked_wsind; y < ws_len; y++) {
-      if (filtered_movies[i].movie_id == wscores[y].movie_id) {
+    for (unsigned int j = checked_wsind; j < ws_len; j++) {
+      if (filtered_movies[i].movie_id == wscores[j].movie_id) {
         if (is_mov_id == 0) {
           is_mov_id = 1;
-          checked_wsind = y;
+          checked_wsind = j;
         }
-        weighted_score_sum += wscores[y].weighted_rating;
-        simscore_sum += wscores[y].simscore;
-      } else if (is_mov_id && filtered_movies[i].movie_id != wscores[y].movie_id) {
+        weighted_score_sum += wscores[j].weighted_rating;
+        simscore_sum += wscores[j].simscore;
+      } else if (is_mov_id && filtered_movies[i].movie_id != wscores[j].movie_id) {
         is_mov_id = 0;
         break;
       }

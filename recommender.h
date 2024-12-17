@@ -32,7 +32,7 @@ extern "C" {
 
 // Set dataset path here or override with -D when compiling
 #ifndef DATASET
-#  define DATASET DATASET_SMALL_ALT
+#  define DATASET DATASET_FULL32
 #endif
 
 #ifndef DATA_PATH
