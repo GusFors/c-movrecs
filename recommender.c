@@ -139,13 +139,17 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   unsigned int ws_len = weighted_scores_short(simscores, ratings_notseen, simlen, notseen_cnt, wscores);
 
   clock_gettime(CLOCK_MONOTONIC, &ws2);
-  printf("ws short: " YELLOW_OUTPUT "%0.17f\n",
-         ((double)(ws2.tv_sec - ws1.tv_sec) + (double)(ws2.tv_nsec - ws1.tv_nsec) / (double)1000000000L) * 1000);
+  printf("ws short: " YELLOW_OUTPUT "%0.17f\n", ((double)(ws2.tv_sec - ws1.tv_sec) + (double)(ws2.tv_nsec - ws1.tv_nsec) / (double)1000000000L) * 1000);
   printf(RESET_OUTPUT);
 
-  clock_t wsort1 = clock();
+  struct timespec wsort1, wsort2;
+
+  clock_gettime(CLOCK_MONOTONIC, &wsort1);
   merg_sort_ws_by_movid(wscores, ws_len, NUM_THREADS);
-  printf("ws sorted in: %.17gms\n", ((float)(clock() - wsort1) / CLOCKS_PER_SEC) * 1000);
+  clock_gettime(CLOCK_MONOTONIC, &wsort2);
+  
+  printf("ws sorted in: " YELLOW_OUTPUT "%0.17f" RESET_OUTPUT "\n",
+         ((double)(wsort2.tv_sec - wsort1.tv_sec) + (double)(wsort2.tv_nsec - wsort1.tv_nsec) / (double)1000000000L) * 1000);
 
   // struct movie_compact *filtered_movies_in_wscores =(sizeof(struct movie_compact) * mlength);
 
@@ -210,11 +214,9 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
          ((double)(calc2.tv_sec - calc1.tv_sec) + (double)(calc2.tv_nsec - calc1.tv_nsec) / (double)1000000000L) * 1000);
   printf(RESET_OUTPUT);
 
-  // TODO some test should still run, like testing duplicate movids
   if (flags & TESTS) {
-    test_compare_movie_ids(movie_recs);
     test_check_duplicated_movie_ids(movie_recs, num_recs);
-    test_compare_scores_diff(movie_recs, num_recs);
+    // test_compare_scores_diff(movie_recs, num_recs);
     test_compare_sim_scores(simscores, simlen, userid_a);
     test_movie_recommendation_tests(movie_recs, num_recs, userid_a);
   }

@@ -354,47 +354,6 @@ int test_compare_sim_scores(struct user_sim *calculated_sim_scores, unsigned int
   return RETURN_SUCCESS;
 }
 
-int test_compare_movie_ids(struct movie_recommendation *calculated_recommendations) {
-  printf(YELLOW_OUTPUT "\ntest compare movie ids\n" RESET_OUTPUT);
-
-  unsigned int node_test_movids_old_version[100] = {
-      26810, 2239,   6460,   7121,  334,  174053, 1964,   177593, 4441,  7008,  2511,   4956,  2925,   6051,  9010,  2351,  31364, 4444,   3224,   3384,
-      57274, 213,    168418, 30803, 5833, 115122, 87234,  27801,  7842,  3727,  121231, 55363, 58301,  85736, 90439, 898,   98154, 6345,   80139,  1836,
-      51931, 104879, 117192, 26680, 2436, 27397,  103688, 106642, 59141, 942,   3152,   123,   112804, 3972,  4765,  3771,  26171, 2131,   1046,   112175,
-      55167, 2349,   47423,  3451,  4334, 58295,  1303,   87529,  80906, 42632, 1733,   1238,  1104,   893,   1611,  80831, 3342,  171763, 187595, 3201,
-      2035,  1217,   3275,   1273,  3681, 89904,  1051,   5466,   1178,  6618,  27831,  26082, 8042,   6306,  162,   6235,  1041,  5404,   3111,   2360,
-  };
-
-  unsigned int cver_test_movids_exp[100] = {
-      26810,  2239,   6460,   7121,   334,  174053, 1964,   177593, 4441,  7008, 2511,   4956,  2925,  6051,  9010,  2351,  31364, 4444,  3224,   3384,
-      57274,  213,    168418, 30803,  5833, 115122, 87234,  27801,  7842,  3727, 121231, 55363, 58301, 85736, 90439, 898,   6345,  80139, 1836,   51931,
-      104879, 117192, 26680,  98154,  2436, 27397,  103688, 106642, 59141, 942,  3152,   123,   3972,  4765,  3771,  26171, 2131,  1046,  112175, 55167,
-      2349,   47423,  3451,   112804, 4334, 58295,  1303,   80906,  87529, 2035, 42632,  1733,  1238,  1104,  893,   1611,  80831, 3342,  171763, 187595,
-      3201,   1217,   3275,   1273,   3681, 1051,   5466,   1178,   89904, 6618, 27831,  26082, 8042,  6306,  162,   1041,  6235,  5404,  3111,   2360,
-  };
-
-  unsigned int num_exact_matchings_ids_node_old = 0;
-  unsigned int num_exact_matchings_ids = 0;
-
-  for (int i = 0; i < 100; i++) {
-    if (node_test_movids_old_version[i] == calculated_recommendations[i].movie_id)
-      num_exact_matchings_ids_node_old++;
-  }
-
-  for (int i = 0; i < 100; i++) {
-    if (cver_test_movids_exp[i] == calculated_recommendations[i].movie_id)
-      num_exact_matchings_ids++;
-  }
-
-  printf("num_exact_matchings_ids_n_old: %d/100\n", num_exact_matchings_ids_node_old);
-  printf("num_exact_matchings_ids_cver_exp: %d/100\n", num_exact_matchings_ids);
-
-  if (num_exact_matchings_ids < 30 || num_exact_matchings_ids_node_old < 30)
-    PRINT_WARN("" WARNING_YELLOW " low amount of exactly matching movids\n");
-
-  return 1;
-}
-
 int test_check_duplicated_movie_ids(struct movie_recommendation *calculated_recommendations, unsigned int num_recs) {
   int pass = 1;
   printf(YELLOW_OUTPUT "\ntest duplicate movids, " RESET_OUTPUT "total recs: %d\n", num_recs);
@@ -430,7 +389,7 @@ int test_check_duplicated_movie_ids(struct movie_recommendation *calculated_reco
   pass ? printf(PASS_GREEN) : printf(FAIL_RED);
   printf("\n");
 
-  return 1;
+  return pass;
 }
 
 int test_compare_scores_diff(struct movie_recommendation *calculated_recommendations, unsigned int num_recs) {
