@@ -151,7 +151,7 @@ struct user_sim similarity_comparisons[] = {
 #elif DATASET == DATASET_ORIGINAL
 const char *TESTSET_TITLE = "ORIGINAL_NOT_IMPLEMENTED " DATA_PATH;
 struct user_sim similarity_comparisons[] = {0};
-struct movie_recommendation movie_rec_comparisons[] ={0}
+struct movie_recommendation movie_rec_comparisons[] ={0};
 #else
 const char *TESTSET_TITLE = "NOT_IMPLEMENTED " DATA_PATH;
 #  ifndef FULL_TEST_DATA

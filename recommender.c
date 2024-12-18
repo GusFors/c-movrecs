@@ -120,7 +120,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
 
   struct timespec e1, e2;
   clock_gettime(CLOCK_MONOTONIC, &e1);
-  unsigned int simlen = euclidianscores(userid_a, ratings_a, numratings_a, uids, ulength, filtered_ratings, filtered_rlength, simscores);
+  unsigned int simlen = euclidianscores_match(userid_a, ratings_a, numratings_a, uids, ulength, filtered_ratings, filtered_rlength, simscores);
   clock_gettime(CLOCK_MONOTONIC, &e2);
 
   printf("euclidianscores sim in: " YELLOW_OUTPUT "%0.17f\n",
