@@ -45,12 +45,22 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
 
   clock_t c1 = clock();
 
+  unsigned int highest_movid = 0;
+  for (unsigned int i = 0; i < filtered_rlength; i++) {
+    if (filtered_ratings[i].movie_id > highest_movid)
+      highest_movid = filtered_ratings[i].movie_id;
+  }
+
+  unsigned int *matching_ratings_a = calloc(highest_movid, sizeof(unsigned int));
+  PRINT_VERBOSE("highest movid: %d\n", highest_movid);
+
   unsigned int numratings_a = count_user_ratings(userid_a, filtered_ratings, filtered_rlength);
   unsigned int *movseen_by_userid_a = malloc(numratings_a * sizeof(unsigned int));
 
   for (unsigned int i = 0, y = 0; i < filtered_rlength; i++) {
     if (filtered_ratings[i].user_id == userid_a) {
       movseen_by_userid_a[y] = filtered_ratings[i].movie_id;
+      matching_ratings_a[filtered_ratings[i].movie_id] = 1;
       y++;
     }
   }
@@ -74,32 +84,21 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   merg_sort_rating_by_uid(filtered_ratings, filtered_rlength, NUM_THREADS);
 
   clock_t notseen_t1 = clock();
-  unsigned int notseen_cnt = 0;
+
+  unsigned int ratings_notseen_length = 0; //
   for (unsigned int i = 0; i < filtered_rlength; i++) {
-    unsigned int isseen = 0;
-    for (unsigned int j = 0; j < numratings_a; j++) {
-      if (movseen_by_userid_a[j] == filtered_ratings[i].movie_id) {
-        isseen = 1;
-      }
-    }
-    if (!isseen)
-      notseen_cnt++;
+    if (matching_ratings_a[filtered_ratings[i].movie_id] == 0)
+      ratings_notseen_length++;
   }
 
-  struct rating *ratings_notseen = malloc(notseen_cnt * sizeof(struct rating));
+  struct rating *ratings_notseen = malloc(ratings_notseen_length * sizeof(struct rating));
+  printf("ratings notseen length: %d\n", ratings_notseen_length);
 
-  unsigned int notseen_cnt2 = 0;
+  unsigned int ratings_notseen_length2 = 0;
   for (unsigned int i = 0; i < filtered_rlength; i++) {
-    unsigned int isseen = 0;
-    for (unsigned int j = 0; j < numratings_a; j++) {
-      if (movseen_by_userid_a[j] == filtered_ratings[i].movie_id) {
-        isseen = 1;
-        // j++;
-      }
-    }
-    if (!isseen) {
-      ratings_notseen[notseen_cnt2] = filtered_ratings[i];
-      notseen_cnt2++;
+    if (matching_ratings_a[filtered_ratings[i].movie_id] == 0) {
+      ratings_notseen[ratings_notseen_length2] = filtered_ratings[i];
+      ratings_notseen_length2++;
     }
   }
 
@@ -119,6 +118,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   printf(RESET_OUTPUT);
 
   struct timespec e1, e2;
+
   clock_gettime(CLOCK_MONOTONIC, &e1);
   unsigned int simlen = euclidianscores_match(userid_a, ratings_a, numratings_a, uids, ulength, filtered_ratings, filtered_rlength, simscores);
   clock_gettime(CLOCK_MONOTONIC, &e2);
@@ -130,13 +130,13 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   struct timespec ws1, ws2;
 
   clock_gettime(CLOCK_MONOTONIC, &ws1);
-  clock_t w1 = clock();
 
-  PRINT_VERBOSE("notseen cnt: %d\n", notseen_cnt);
-  struct weighted_score *wscores = malloc(notseen_cnt * sizeof(struct weighted_score));
+  PRINT_VERBOSE("notseen cnt: %d\n", ratings_notseen_length);
+  struct weighted_score *wscores = malloc(ratings_notseen_length * sizeof(struct weighted_score));
   PRINT_VERBOSE("simlen: %d\n", simlen);
 
-  unsigned int ws_len = weighted_scores_short(simscores, ratings_notseen, simlen, notseen_cnt, wscores);
+  unsigned int ws_len = weighted_scores_short(simscores, ratings_notseen, simlen, ratings_notseen_length, wscores);
+  // unsigned int ws_len = weighted_scores_short(simscores, filtered_ratings, simlen, filtered_rlength, wscores);
 
   clock_gettime(CLOCK_MONOTONIC, &ws2);
   printf("ws short: " YELLOW_OUTPUT "%0.17f\n", ((double)(ws2.tv_sec - ws1.tv_sec) + (double)(ws2.tv_nsec - ws1.tv_nsec) / (double)1000000000L) * 1000);
@@ -153,20 +153,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
 
   // struct movie_compact *filtered_movies_in_wscores =(sizeof(struct movie_compact) * mlength);
 
-  unsigned int highest_id = 0;
-  for (unsigned int i = 0; i < filtered_mlength; i++) {
-    if (filtered_movies[i].movie_id > highest_id)
-      highest_id = filtered_movies[i].movie_id;
-  }
-
-  PRINT_VERBOSE("highest movid: %d\n", highest_id);
-
-  unsigned int highest_numratings = 0;
-  for (unsigned int i = 0; i < filtered_mlength; i++) {
-    if (filtered_movies[i].num_ratings > highest_numratings)
-      highest_numratings = filtered_movies[i].num_ratings;
-  }
-  printf("highest numratings: %d\n", highest_numratings);
+  clock_gettime(CLOCK_MONOTONIC, &ws1);
 
   // int rows = highest_id;
   // int cols = highest_numratings + 1;
@@ -206,7 +193,9 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
     }
   }
 
-  printf("wscores: " YELLOW_OUTPUT "%.17gms\n", ((float)(clock() - w1) / CLOCKS_PER_SEC) * 1000);
+  clock_gettime(CLOCK_MONOTONIC, &ws2);
+  printf("movie recommendation scores: " YELLOW_OUTPUT "%0.17f\n",
+         ((double)(ws2.tv_sec - ws1.tv_sec) + (double)(ws2.tv_nsec - ws1.tv_nsec) / (double)1000000000L) * 1000);
   printf(RESET_OUTPUT);
 
   clock_gettime(CLOCK_MONOTONIC, &calc2);
@@ -241,6 +230,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   free(ratings_notseen);
   free(movseen_by_userid_a);
   free(filtered_movies);
+  free(matching_ratings_a);
   if ((flags & RATINGS_EXTRA_FILTER))
     free(filtered_ratings);
 

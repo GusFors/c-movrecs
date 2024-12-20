@@ -10,20 +10,20 @@
 #include <pthread.h>
 #include "regression_tests.h"
 
-unsigned int weighted_scores_short(struct user_sim *simscores, struct rating *ratings_notseen, unsigned int simlen, unsigned int notseen_cnt,
+unsigned int weighted_scores_short(struct user_sim *simscores, struct rating *ratings_notseen, unsigned int simlen, unsigned int ratings_notseen_length,
                                    struct weighted_score *wscores) {
   struct timespec t1, t2;
   clock_gettime(CLOCK_MONOTONIC, &t1);
 
   int is_sorted = 1;
-  for (unsigned int i = 0; i < notseen_cnt - 1; i++) {
+  for (unsigned int i = 0; i < ratings_notseen_length - 1; i++) {
     if (ratings_notseen[i].user_id > ratings_notseen[i + 1].user_id)
       is_sorted = 0;
   }
 
   if (!is_sorted) {
     PRINT_VERBOSE("INFO: weighted_scores_short, ratings not sorted by user_id, sorting before continuing\n");
-    merg_sort_rating_by_uid(ratings_notseen, notseen_cnt, NUM_THREADS);
+    merg_sort_rating_by_uid(ratings_notseen, ratings_notseen_length, NUM_THREADS);
   }
 
   clock_gettime(CLOCK_MONOTONIC, &t2);
@@ -37,7 +37,7 @@ unsigned int weighted_scores_short(struct user_sim *simscores, struct rating *ra
   unsigned int is_curr_id = 0;
 
   for (unsigned int i = 0, l = 0; i < simlen; i++) {
-    for (unsigned int j = counted_indexes; j < notseen_cnt; j++) {
+    for (unsigned int j = counted_indexes; j < ratings_notseen_length; j++) {
       if (simscores[i].user_id == ratings_notseen[j].user_id) {
 
         if (is_curr_id == 0)
