@@ -31,6 +31,7 @@ ssize_t read_ratings_lines(void) {
   }
 
   fclose(rfile);
+  free(line);
   printf("\n%zu rating lines read.\n", num_lines);
 
   return num_lines;
@@ -97,6 +98,7 @@ ssize_t read_ratings_fast(struct rating *ratings_p) {
   printf("rating_buf[%zu]: %d, %d, %lf\n", index, ratings_p[index - 1].user_id, ratings_p[index - 1].movie_id, ratings_p[index - 1].rating);
 
   fclose(rfile);
+  free(line);
   printf("\n%zu rating records read.\n", index);
 
   return index;
@@ -122,6 +124,7 @@ ssize_t read_movies_lines(void) {
   }
 
   fclose(rfile);
+  free(line);
   printf("\n%zu movies lines read.\n", num_lines);
 
   return num_lines;

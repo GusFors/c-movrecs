@@ -12,6 +12,7 @@
 #include <pthread.h>
 #include "regression_tests.h"
 #include "calc_scores.h"
+#include <stdint.h>
 
 void get_recommendations(unsigned int userid_a, unsigned int min_numratings, struct movie *movies, struct rating *ratings, unsigned int *uids,
                          unsigned int mlength, unsigned int rlength, unsigned int ulength, unsigned int flags) {
@@ -51,7 +52,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
       highest_movid = filtered_ratings[i].movie_id;
   }
 
-  unsigned int *matching_ratings_a = calloc(highest_movid, sizeof(unsigned int));
+  unsigned int *matching_ratings_a = calloc(highest_movid + 1, sizeof(unsigned int)); // +1 or else it might overflow
   PRINT_VERBOSE("highest movid: %d\n", highest_movid);
 
   unsigned int numratings_a = count_user_ratings(userid_a, filtered_ratings, filtered_rlength);

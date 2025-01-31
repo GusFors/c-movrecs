@@ -1,6 +1,8 @@
 #ifndef RECOMMENDER_H
 #define RECOMMENDER_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -8,9 +10,9 @@ extern "C" {
 #ifndef VERBOSE_INFO
 #  define PRINT_VERBOSE(...) while (0)
 #else
-#  define PRINT_VERBOSE(...)                                                                                                                         \
-    do {                                                                                                                                             \
-      printf(__VA_ARGS__);                                                                                                                           \
+#  define PRINT_VERBOSE(...)                                                                                                                              \
+    do {                                                                                                                                                  \
+      printf(__VA_ARGS__);                                                                                                                                \
     } while (0)
 #endif
 
@@ -129,7 +131,7 @@ struct movie_title {
   // id
 };
 
-enum flags {
+enum flags : uint8_t {
   TESTS = 1 << 0,
   VERBOSE_DEBUG = 1 << 1,
   SINGLE_THREADED = 1 << 2,
