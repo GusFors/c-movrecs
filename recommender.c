@@ -52,7 +52,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
       highest_movid = filtered_ratings[i].movie_id;
   }
 
-  unsigned int *matching_ratings_a = calloc(highest_movid + 1, sizeof(unsigned int)); // +1 or else it might overflow
+  unsigned int *matching_ratings_a = calloc(highest_movid + 1, sizeof(unsigned int)); // +1 to not read outside array bounds
   PRINT_VERBOSE("highest movid: %d\n", highest_movid);
 
   unsigned int numratings_a = count_user_ratings(userid_a, filtered_ratings, filtered_rlength);

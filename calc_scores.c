@@ -72,13 +72,13 @@ unsigned int euclidianscores_match(unsigned int userid_a, struct rating *ratings
       highest_movid = filtered_ratings[i].movie_id;
   }
 
-  struct rating *matching_ratings = calloc(highest_movid, sizeof(struct rating));
+  struct rating *matching_ratings = calloc(highest_movid + 1, sizeof(struct rating));
 
   for (unsigned int i = 0; i < numratings_a; i++) {
     matching_ratings[ratings_a[i].movie_id] = ratings_a[i];
   }
 
-  struct rating *ratings_b = calloc(highest_movid, sizeof(struct rating));
+  struct rating *ratings_b = calloc(highest_movid + 1, sizeof(struct rating));
   unsigned int ratings_b_length = 0;
   unsigned int used_index[65536] = {0};
 
