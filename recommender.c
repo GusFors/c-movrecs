@@ -218,7 +218,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   bubble_sort_numr_rscore(movie_recs, num_recs);
   printf("sort numratings: %.17gms\n", ((float)(clock() - numr1) / CLOCKS_PER_SEC) * 1000);
 
-  unsigned int num_print = 16;
+  unsigned int num_print = 7;
 
   for (unsigned int i = 0; i < num_print && i < num_recs; i++) {
     printf("movieid: %d, ratings: %d, score: %0.4f\n", movie_recs[i].movie_id, movie_recs[i].num_ratings, movie_recs[i].recommendation_score);

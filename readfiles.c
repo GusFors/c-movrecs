@@ -20,19 +20,26 @@ ssize_t read_ratings_lines(void) {
     return -1;
   }
 
+  fseek(rfile, 0, SEEK_END);
+  size_t rfile_size = (size_t)ftell(rfile);
+
+  printf("rating file size in bytes: %ld\n", rfile_size);
+
   fseek(rfile, 0, SEEK_SET);
-  char *line = NULL;
-  size_t line_length = 0;
-  ssize_t readl;
+  char *rfile_str = malloc(rfile_size + 1);
+
+  fread(rfile_str, rfile_size, 1, rfile);
   ssize_t num_lines = -1;
 
-  while ((readl = getline(&line, &line_length, rfile)) != -1) {
-    num_lines++;
+  for (uint64_t i = 0; i < rfile_size; i++) {
+    if (rfile_str[i] == '\n')
+      num_lines++;
   }
 
+  printf("num rating lines: %zd\n", num_lines);
+
   fclose(rfile);
-  free(line);
-  printf("\n%zu rating lines read.\n", num_lines);
+  free(rfile_str);
 
   return num_lines;
 }
@@ -126,6 +133,33 @@ ssize_t read_movies_lines(void) {
   fclose(rfile);
   free(line);
   printf("\n%zu movies lines read.\n", num_lines);
+
+  return num_lines;
+}
+
+ssize_t read_ratings_lines_gl(void) {
+  FILE *rfile;
+  rfile = fopen("./data/csv-data/" DATA_PATH "/ratings.csv", "r");
+
+  if (rfile == NULL) {
+    printf("file error\n");
+    return -1;
+  }
+
+  fseek(rfile, 0, SEEK_SET);
+
+  char *line = NULL;
+  size_t line_length = 0;
+  ssize_t readl;
+  ssize_t num_lines = -1;
+
+  while ((readl = getline(&line, &line_length, rfile)) != -1) {
+    num_lines++;
+  }
+
+  fclose(rfile);
+  free(line);
+  printf("\n%zu rating lines read.\n", num_lines);
 
   return num_lines;
 }
