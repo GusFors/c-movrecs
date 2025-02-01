@@ -31,7 +31,7 @@ ssize_t read_ratings_lines(void) {
   fread(rfile_str, rfile_size, 1, rfile);
   ssize_t num_lines = -1;
 
-  for (uint64_t i = 0; i < rfile_size; i++) {
+  for (size_t i = 0; i < rfile_size; i++) {
     if (rfile_str[i] == '\n')
       num_lines++;
   }
@@ -44,7 +44,80 @@ ssize_t read_ratings_lines(void) {
   return num_lines;
 }
 
-ssize_t read_ratings_fast(struct rating *ratings_p) {
+ssize_t read_ratings_fast_mem_gl(struct rating *ratings_p) {
+  FILE *rfile;
+  rfile = fopen("./data/csv-data/" DATA_PATH "/ratings.csv", "r");
+
+  if (rfile == NULL) {
+    printf("file error\n");
+    return -1;
+  }
+
+  fseek(rfile, 0, SEEK_END);
+  size_t rfile_size = (size_t)ftell(rfile); // check if -1 before casting?
+
+  printf("rating file size in bytes: %ld\n", rfile_size);
+
+  fseek(rfile, 0, SEEK_SET);
+  char *rfile_str = malloc(rfile_size + 1);
+
+  fread(rfile_str, rfile_size, 1, rfile);
+  fseek(rfile, 0, SEEK_SET);
+
+  char *line = NULL;
+  size_t line_length = 0;
+  ssize_t readl;
+  ssize_t index = -1;
+
+  FILE *rfile_strptr = fmemopen(rfile_str, rfile_size, "r");
+
+  while ((readl = getline(&line, &line_length, rfile_strptr)) != -1) {
+    if (index != -1) {
+      char userid[64] = "";
+      char movieid[64] = "";
+      char rating[64] = "";
+
+      unsigned int val_count = 0;
+      unsigned int substr_index = 0;
+
+      for (unsigned int i = 0; i < line_length; i++) {
+        if (line[i] == DELIMITER[0]) {
+          val_count++;
+
+          if (val_count == 3)
+            break;
+
+          substr_index = 0;
+          continue;
+        }
+
+        if (val_count == 0)
+          userid[substr_index] = line[i];
+        else if (val_count == 1)
+          movieid[substr_index] = line[i];
+        else if (val_count == 2)
+          rating[substr_index] = line[i];
+
+        substr_index++;
+      }
+
+      ratings_p[index].user_id = (unsigned)strtoul(userid, NULL, 0);
+      ratings_p[index].movie_id = (unsigned)strtoul(movieid, NULL, 0);
+      ratings_p[index].rating = strtof(rating, NULL);
+    }
+
+    index++;
+  }
+
+  fclose(rfile);
+  fclose(rfile_strptr);
+  free(line);
+  printf("\n%zu rating records read.\n", index);
+
+  return index;
+}
+
+ssize_t read_ratings_fast_gl(struct rating *ratings_p) {
   FILE *rfile;
   rfile = fopen("./data/csv-data/" DATA_PATH "/ratings.csv", "r");
 
@@ -100,9 +173,6 @@ ssize_t read_ratings_fast(struct rating *ratings_p) {
 
     index++;
   }
-
-  printf("rating_buf[%zu]: %d, %d, %lf\n", index, ratings_p[0].user_id, ratings_p[0].movie_id, ratings_p[0].rating);
-  printf("rating_buf[%zu]: %d, %d, %lf\n", index, ratings_p[index - 1].user_id, ratings_p[index - 1].movie_id, ratings_p[index - 1].rating);
 
   fclose(rfile);
   free(line);
@@ -267,4 +337,102 @@ size_t read_users_from_ratings(unsigned int *uids, struct rating *ratings_p, uns
   printf("uids from ratings in %f seconds, %.17gms\n", total, total * 1000);
   printf("\n%d user records read.\n", user_cnt);
   return user_cnt;
+}
+
+ssize_t read_ratings_fast(struct rating *ratings_p) {
+  FILE *rfile;
+  rfile = fopen("./data/csv-data/" DATA_PATH "/ratings.csv", "r");
+
+  if (rfile == NULL) {
+    printf("file error\n");
+    return -1;
+  }
+
+  fseek(rfile, 0, SEEK_END);
+  size_t rfile_size = (size_t)ftell(rfile); // check if -1 before casting?
+
+  printf("rating file size in bytes: %ld\n", rfile_size);
+
+  fseek(rfile, 0, SEEK_SET);
+  char *rfile_str = malloc(rfile_size + 1);
+
+  fread(rfile_str, rfile_size, 1, rfile);
+
+  ssize_t num_lines = -1;
+
+  for (size_t i = 0; i < rfile_size; i++) {
+    if (rfile_str[i] == '\n')
+      num_lines++;
+  }
+
+  fseek(rfile, 0, SEEK_SET);
+
+  char *line = NULL;
+  ssize_t index = -1;
+
+  // char *substrings[num_lines];
+  char substr[128] = "";
+  unsigned int substr_pos = 0;
+
+  for (size_t i = 0; i < rfile_size; i++) {
+    if (rfile_str[i] != '\n') {
+      substr[substr_pos] = rfile_str[i];
+      substr_pos++;
+    } else {
+      if (index != -1) {
+        size_t length = strlen(substr);
+
+        char userid[64] = "";
+        char movieid[64] = "";
+        char rating[64] = "";
+
+        unsigned int val_count = 0;
+        unsigned int substr_index = 0;
+
+        for (unsigned int j = 0; j < length; j++) {
+          if (substr[j] == DELIMITER[0]) {
+            val_count++;
+
+            if (val_count == 3)
+              break;
+
+            substr_index = 0;
+            continue;
+          }
+
+          if (val_count == 0)
+            userid[substr_index] = substr[j];
+          else if (val_count == 1)
+            movieid[substr_index] = substr[j];
+          else if (val_count == 2)
+            rating[substr_index] = substr[j];
+
+          substr_index++;
+        }
+
+        ratings_p[index].user_id = (unsigned)strtoul(userid, NULL, 0);
+        ratings_p[index].movie_id = (unsigned)strtoul(movieid, NULL, 0);
+        ratings_p[index].rating = strtof(rating, NULL);
+      }
+
+      index++;
+
+      // substr[substr_pos + 1] = '\0';
+      // char *substr_copy = malloc(substr_pos + 1);
+      // strncat(substr_copy, substr, substr_pos + 1);
+      // substrings[current_line] = substr_copy;
+
+      substr_pos = 0;
+      memset(substr, '\0', sizeof(substr));
+    }
+  }
+
+  printf("rating_buf[%zu]: %d, %d, %lf\n", index, ratings_p[0].user_id, ratings_p[0].movie_id, ratings_p[0].rating);
+  printf("rating_buf[%zu]: %d, %d, %lf\n", index, ratings_p[index - 1].user_id, ratings_p[index - 1].movie_id, ratings_p[index - 1].rating);
+
+  fclose(rfile);
+  free(line);
+  printf("\n%zu rating records read.\n", index);
+
+  return index;
 }
