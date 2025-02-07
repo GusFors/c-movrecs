@@ -34,8 +34,8 @@ static inline void ins_sort_rating_by_offset(struct rating a[], unsigned int len
       r = a[y];
       i = y - 1;
 
-      // NOTE negate comparison here
-      while (i >= 0 && !compare_func((int *)((char *)&(a[i]) + val_offset), ((int *)((char *)&(r) + val_offset)))) {
+      // NOTE negate comparison here, (int *) cast not needed
+      while (i >= 0 && !compare_func(((char *)&(a[i]) + val_offset), (((char *)&(r) + val_offset)))) {
         a[i + 1] = a[i];
         i--;
       }
@@ -73,8 +73,7 @@ void merg_sort_merge_by_offset(struct rating a[], unsigned int left, unsigned in
     }
   } else {
     for (i = 0, j = 0, k = left; k <= right; k++) {
-      if ((i < left_length) &&
-          (j >= right_length || compare_func(((int *)((char *)&(temp_left[i]) + val_offset)), ((int *)((char *)&(temp_right[j]) + val_offset))))) {
+      if ((i < left_length) && (j >= right_length || compare_func(((char *)&(temp_left[i]) + val_offset), (char *)&(temp_right[j]) + val_offset))) {
         a[k] = temp_left[i];
         i++;
       } else {
@@ -95,7 +94,7 @@ void merge_sort_thread_handler(struct rating a[], unsigned int length, unsigned 
                                                int compare_func(void *, void *)),
                                int compare_func(void *, void *)) {
 
-  // check if sorted first here?
+  // check if sorted first using compare func?
 
   if (length <= num_threads)
     num_threads = 1;
