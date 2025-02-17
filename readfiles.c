@@ -1,11 +1,14 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include "recommender.h"
 #include "readfiles.h"
+#include <sys/stat.h>
+#include <sys/mman.h>
 
 #ifndef DELIMITER
 #  define DELIMITER ","
@@ -113,6 +116,88 @@ ssize_t read_ratings_fast_mem_gl(struct rating *ratings_p) {
   fclose(rfile_strptr);
   free(line);
   printf("\n%zu rating records read.\n", index);
+
+  return index;
+}
+
+ssize_t read_ratings_fast_mmap(struct rating *ratings_p) {
+  int rfile = open("./data/csv-data/" DATA_PATH "/ratings.csv", O_RDONLY);
+
+  struct stat s;
+
+  if (fstat(rfile, &s) == -1) {
+    printf("file stat error\n");
+    return -1;
+  }
+
+  printf("file size stat: %ld\n", s.st_size);
+
+  char *mapped_rfile = mmap(NULL, (size_t)s.st_size, PROT_READ, MAP_PRIVATE, rfile, 0);
+  ssize_t offset = 0;
+  ssize_t current_line = -1;
+  ssize_t line_size = 0;
+  unsigned int index = 0;
+
+  for (ssize_t i = 0; i < s.st_size; i++) {
+    if (mapped_rfile[i] != '\n') {
+      line_size++;
+    } else {
+      // or use offset to skip first line
+      if (current_line == -1) {
+        current_line = 0;
+        offset += line_size; // +1 ?
+        line_size = 0;
+        // printf("last skipped char: %c\n", mapped_rfile[offset]);
+        continue;
+      }
+
+      unsigned int val_count = 0;
+      unsigned int substr_index = 0;
+      char userid[64] = "";
+      char movieid[64] = "";
+      char rating[64] = "";
+
+      // safer with j < line_size but fixed is slightly faster
+      for (ssize_t j = 0; j < 64; j++) {
+        // if (mapped_rfile[j + offset + 1] == '\n')
+        //   break;
+
+        if (mapped_rfile[j + offset] == DELIMITER[0]) {
+          val_count++;
+
+          if (val_count == 3)
+            break;
+
+          substr_index = 0;
+          continue;
+        }
+
+        if (val_count == 0)
+          userid[substr_index] = mapped_rfile[j + offset];
+        else if (val_count == 1)
+          movieid[substr_index] = mapped_rfile[j + offset];
+        else if (val_count == 2)
+          rating[substr_index] = mapped_rfile[j + offset];
+
+        substr_index++;
+      }
+
+      ratings_p[index].user_id = (unsigned)strtoul(userid, NULL, 0);
+      ratings_p[index].movie_id = (unsigned)strtoul(movieid, NULL, 0);
+      ratings_p[index].rating = strtof(rating, NULL);
+
+      // memset(userid, 0, 64);
+      // memset(movieid, 0, 64);
+      // memset(rating, 0, 64);
+
+      offset += line_size + 1;
+      index++;
+      line_size = 0;
+    }
+  }
+
+  // printf("%c", mapped_rfile[j + offset]);
+  printf("\n%d rating records read.\n", index);
 
   return index;
 }

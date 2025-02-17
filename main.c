@@ -68,7 +68,9 @@ int main(int argc, char *argv[]) {
   printf("num lines read in %.17gms\n", ((double)(r2.tv_sec - r1.tv_sec) + (double)(r2.tv_nsec - r1.tv_nsec) / (double)1000000000L) * 1000);
 
   ratings = malloc((unsigned)rating_file_size * sizeof(struct rating));
-  rlength = read_ratings_fast_mem_gl(ratings);
+  rlength = read_ratings_fast_mmap(ratings);
+  // rlength = read_ratings_fast_mem_gl(ratings);
+  printf("rlength: %zd\n", rlength);
 
   clock_gettime(CLOCK_MONOTONIC, &r2);
   printf("ratings read in %.17gms\n", ((double)(r2.tv_sec - r1.tv_sec) + (double)(r2.tv_nsec - r1.tv_nsec) / (double)1000000000L) * 1000);
