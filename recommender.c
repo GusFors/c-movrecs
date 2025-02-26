@@ -21,15 +21,7 @@ void get_recommendations(unsigned int userid_a, unsigned int min_numratings, str
   struct timespec total1, total2;
   clock_gettime(CLOCK_MONOTONIC, &total1);
 
-  struct timespec calc1, calc2, sort1;
-
-  clock_gettime(CLOCK_MONOTONIC, &calc1);
-  merg_sort_rating_by_movid(ratings, rlength, NUM_THREADS);
-  clock_gettime(CLOCK_MONOTONIC, &sort1);
-
-  PRINT_VERBOSE("sort ratings by movid in: " YELLOW_OUTPUT "%0.17f" RESET_OUTPUT "\n",
-                ((double)(sort1.tv_sec - calc1.tv_sec) + (double)(sort1.tv_nsec - calc1.tv_nsec) / (double)1000000000L) * 1000);
-
+  struct timespec calc1, calc2;
   calc_num_ratings(movies, ratings, mlength, rlength);
 
   struct rating *filtered_ratings;

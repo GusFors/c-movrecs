@@ -3,29 +3,56 @@
 #include <unistd.h>
 #include "recommender.h"
 #include "rating_utils.h"
+#include "array_sorting.h"
+#include "regression_tests.h"
 
+static unsigned int cached_num_ratings = 0;
+
+// add arg/macro to force calc
 void calc_num_ratings(struct movie *movies, struct rating *ratings, unsigned int mlength, unsigned int rlength) {
+  struct timespec sort1, sort2;
   clock_t t1 = clock();
 
-  unsigned int is_curr_mov_id = 0;
-  unsigned int already_checked_indexes = 0;
+  if (!cached_num_ratings) {
+    clock_gettime(CLOCK_MONOTONIC, &sort1);
 
-  for (unsigned int i = 0; i < mlength; i++) {
-    unsigned int num_mratings = 0;
-    for (unsigned int j = already_checked_indexes; j < rlength; j++) {
-      if (movies[i].movie_id == ratings[j].movie_id) {
-        if (is_curr_mov_id == 0) {
-          is_curr_mov_id = 1;
-          already_checked_indexes = j;
-        }
-        num_mratings++;
-      } else if (is_curr_mov_id && movies[i].movie_id != ratings[j].movie_id) {
-        is_curr_mov_id = 0;
-        break;
-      }
+    unsigned int is_sorted = 1;
+    for (unsigned int i = 0; i < rlength - 1; i++) {
+      if (ratings[i].movie_id > ratings[i + 1].movie_id)
+        is_sorted = 0;
     }
-    // keep separate array with only num ratings to use when filter by numratings later? then checking matching movie id can be skipped
-    movies[i].num_ratings = num_mratings;
+
+    if (!is_sorted) {
+      PRINT_VERBOSE("INFO: calc_num_ratings: ratings not sorted by movie_id, sorting before continuing\n");
+      merg_sort_rating_by_movid(ratings, rlength, NUM_THREADS);
+    }
+
+    clock_gettime(CLOCK_MONOTONIC, &sort2);
+
+    PRINT_VERBOSE("sort ratings by movid in: " YELLOW_OUTPUT "%0.17f" RESET_OUTPUT "\n",
+                  ((double)(sort2.tv_sec - sort1.tv_sec) + (double)(sort2.tv_nsec - sort1.tv_nsec) / (double)1000000000L) * 1000);
+
+    unsigned int is_curr_mov_id = 0;
+    unsigned int already_checked_indexes = 0;
+
+    for (unsigned int i = 0; i < mlength; i++) {
+      unsigned int num_mratings = 0;
+      for (unsigned int j = already_checked_indexes; j < rlength; j++) {
+        if (movies[i].movie_id == ratings[j].movie_id) {
+          if (is_curr_mov_id == 0) {
+            is_curr_mov_id = 1;
+            already_checked_indexes = j;
+          }
+          num_mratings++;
+        } else if (is_curr_mov_id && movies[i].movie_id != ratings[j].movie_id) {
+          is_curr_mov_id = 0;
+          break;
+        }
+      }
+      // keep separate array with only num ratings to use when filter by numratings later? then checking matching movie id can be skipped
+      movies[i].num_ratings = num_mratings;
+    }
+    cached_num_ratings = 1;
   }
 
   double total = ((double)clock() - (double)t1) / CLOCKS_PER_SEC;
